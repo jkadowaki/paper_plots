@@ -248,11 +248,11 @@ def poc_plot(data, avg, task, fname="{0}_plot.pdf"):
     POC_PLOT: Creates a figure with 2 side-by-side plots.
     
     Args:
-    data (np.ndarray):
-    fname (str): Name of figure.
+        data (np.ndarray):
+        fname (str): Name of figure.
     
     Returns:
-    None.
+        None.
     """
     
     num_metrics, num_graphsize = data.shape
