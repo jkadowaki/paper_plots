@@ -44,6 +44,7 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
     if arc_mcqa_seed:
         task = "ARC Multiple Choice Question-Answering (From Seed)"
         avg  = 48.27188940092166
+        unit = 'Accuracy (\%)'
         
         data = np.array([
              # Subgraph Size, POC, P, O, C, Oracle, Floor
@@ -62,12 +63,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [8, 52.81933256616801,  52.81933256616801,  52.81933256616801,
                  52.81933256616801,  52.81933256616801,  52.81933256616801] ]).T
               
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if arc_mcqa_epoch:
         task = "ARC Multiple Choice Question-Answering (From Epoch)"
         avg  = 47.03
+        unit = 'Accuracy (\%)'
         
         data = np.array([
              # Subgraph Size, POC, P, O, C, Oracle, Floor
@@ -80,12 +82,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [5, 47.7560414269275,  47.7560414269275,   47.7560414269275,
                  47.7560414269275,  47.7560414269275,   47.7560414269275] ]).T
                           
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if qqp_qpc_seed:
         task = "QQP Question-Pair Classification (From Seed)"
         avg  = 86.2537
+        unit = 'Accuracy (\%)'
         
         data = np.array([
             [2, 86.11, 86.78, 84.99, 87.53, 87.53, 84.66],
@@ -96,12 +99,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
             [7, 88.18, 88.45, 88.19, 88.39, 88.45, 88.18],
             [8, 88.81, 88.81, 88.81, 88.81, 88.81, 88.81] ]).T
             
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if qqp_qpc_epoch:
         task = "QQP Question-Pair Classification (From Epoch)"
         avg  = 85.86
+        unit = 'Accuracy (\%)'
         
         data = np.array([
              [2, 86.03,  85.6,  85.16, 86.39, 86.42, 84.55],
@@ -114,12 +118,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [9, 86.76,  86.76, 86.5,  86.62, 86.76, 86.42],
              [10, 86.89, 86.89, 86.89, 86.89, 86.89, 86.89] ]).T
             
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if wikiqa_ar_seed:
         task = "WikiQA Answer Reranking (From Seed)"
         avg  = 83.775356
+        unit = 'MMR'
         
         data = np.array([
              [2, 86.2706700613969,  84.0410052910053,  84.13454270597128,
@@ -137,12 +142,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [8, 86.11426051902244, 86.11426051902244, 86.11426051902244,
                  86.11426051902244, 86.11426051902244, 86.11426051902244] ]).T
 
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if wikiqa_ar_epoch:
         task = "WikiQA Answer Reranking (From Epoch)"
         avg  = 86.23
+        unit = 'MMR'
         
         data = np.array([
              [2, 86.11740992693375, 86.76114890400603, 86.11740992693375,
@@ -154,12 +160,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [5, 86.89502737121786, 86.89502737121786, 86.89502737121786,
                  86.89502737121786, 86.89502737121786, 86.89502737121786] ]).T
               
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if conll_ner_seed:
         task = "CoNLL Named Entity Recognition (From Seed)"
         avg  = 94.02
+        unit = 'F1'
 
         data = np.array([
              [2, 94.18105263157895, 94.18105263157895, 93.98686205154118,
@@ -177,12 +184,13 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [8, 94.27535620942584, 94.27535620942584, 94.27535620942584,
                  94.27535620942584, 94.27535620942584, 94.27535620942584] ]).T
 
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     if conll_ner_epoch:
         task = "CoNLL Named Entity Recognition (From Epoch)"
         avg  = 94.11
+        unit = 'F1'
         
         data = np.array([
              [2,  94.2466677914628,  94.2466677914628,  94.10176356425617,
@@ -204,7 +212,7 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
              [10, 94.12062420919443, 94.12062420919443, 94.12062420919443,
                   94.12062420919443, 94.12062420919443, 94.12062420919443] ]).T
               
-        dict_list.append({"task":task, "avg":avg, "data":data})
+        dict_list.append({"task":task, "avg":avg, "data":data, "metric":unit})
 
 
     return dict_list
@@ -212,7 +220,7 @@ def get_data(arc_mcqa_seed=False,  arc_mcqa_epoch=False,
 
 #################################### FORMAT ####################################
 
-labels  = ["Subgraph Size", "POC", "P", "O", "C", "Oracle", "Floor"]
+labels  = ["Number of Base Models", "POC", "P", "O", "C", "Ceiling", "Floor"]
 markers = [':','*','d','s','^','--', '-.']  # avg, POC, P, O, C, Oracle, Floor
 
 
@@ -242,7 +250,7 @@ def str_to_latex(str):
 
 ##################################### PLOT #####################################
 
-def poc_plot(data, avg, task, fname="{0}_plot.pdf"):
+def poc_plot(data, avg, task, metric, fname="{0}_plot.pdf"):
     
     """
     POC_PLOT: Creates a figure with 2 side-by-side plots.
@@ -301,7 +309,7 @@ def poc_plot(data, avg, task, fname="{0}_plot.pdf"):
     # Add Title / Labels/ Legend.
     plt.title(str_to_latex(task))
     plt.xlabel(str_to_latex(labels[0]))
-    plt.ylabel(str_to_latex("Performance (\%)"))
+    plt.ylabel(str_to_latex(metric))
     plt.legend(loc='lower right', fontsize=10)
     
     # Saves Figure
@@ -323,9 +331,10 @@ def main():
     # Plots the Data Retrieved
     for dict in tasks:
     
-        poc_plot( data = dict.get("data"),
-                  avg  = dict.get("avg"),
-                  task = dict.get("task") )
+        poc_plot( data   = dict.get("data"),
+                  avg    = dict.get("avg"),
+                  task   = dict.get("task"),
+                  metric = dict.get("metric") )
 
 
 ################################################################################
