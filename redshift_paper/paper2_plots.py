@@ -426,8 +426,6 @@ def main(data_directory='.',
 ################################################################################
 
 if __name__ == '__main__':
-    main(plot_pair=False,
-         plot_hist=True,
-         plot_ks=True)
+    main(plot_pair=True, plot_ks=True)
 
     # Need to implement plot!
