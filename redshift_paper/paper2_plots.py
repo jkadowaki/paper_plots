@@ -398,7 +398,7 @@ def main(data_directory='.',
         df_isolated  = df_results.loc[df_results["Environment"] == "Isolated"]
         df_companion = df_results.loc[df_results["Environment"] == "Companions"]
 
-        fig, axes = plt.subplots(2, 3) #, subplot_kw=dict(polar=True))
+        #fig, axes = plt.subplots(2, 3) #, subplot_kw=dict(polar=True))
 
         for idx, feature in enumerate(["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500"]):
 
@@ -419,11 +419,15 @@ def main(data_directory='.',
             print("KS-statistic:",    ks_stat)
             print("P-value (2tail):", ks_pval)
 
-            axes[int(np.floor(idx/2)), idx%3].plot(stats.cumfreq) =
-            axes[int(np.floor(idx/2)), idx%3].set_title(feature)
+            #axes[int(np.floor(idx/2)), idx%3].plot(stats.cumfreq) =
+            #axes[int(np.floor(idx/2)), idx%3].set_title(feature)
 
 
 ################################################################################
 
 if __name__ == '__main__':
-    main()
+    main(plot_pair=False,
+         plot_hist=True,
+         plot_ks=True)
+
+    # Need to implement plot!
