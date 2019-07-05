@@ -170,7 +170,7 @@ def main(data_directory='.',
 
     # Computes the Effictive Radius
     r_eff = get_physical_size(df_results['cz'], df_results['ComaSize'], H0=70)
-    df_results['Reff'] = r_eff
+    df_results['Reff'] = r_eff.round(decimals=2)
 
     # Environment
     iso = ["Isolated" if val==0 else "Unconstrained" if val==-1 else "Interacting"
@@ -179,7 +179,7 @@ def main(data_directory='.',
 
     # Absolute Magnitude
     absmag = get_absolute_magnitude(df_results['Mg'], df_results['cz'], H0=70)
-    df_results['absmag'] = absmag
+    df_results['absmag'] = absmag.round(decimals=2)
 
     df_results.to_csv(udg_param_file, index=False, sep='\t')
 
