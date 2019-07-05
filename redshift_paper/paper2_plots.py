@@ -33,27 +33,49 @@ class UDG:
         self.cz   = cz
         self.angular_size = angular_size
 
+
 ################################################################################
 
 def get_physical_size(velocity, angular_size, H0=70):
-    
     """
     GET_PHYSICAL_SIZE: Computes an object's physical size given its angular
-                       size, it's recessional veloctiy, and an assumed
+                       size, its recessional veloctiy, and an assumed
                        Hubble's constant.
-    
+
     ARGS:
         (float) angular_size: Object's Angular Size in Arcseconds (")
         (float) velocity: Recessional Velocity in (km/s) Attributed to the
                           Universe's Expansion Rate
         (float) H0: Hubble's Constant in (km/s)/Mpc
-    
+
     RETURNS:
         (float) physical_size: Object's Physical Size in kpc
     """
-    
+
     RAD_TO_ARCSEC = 206265  # arcseconds in a radian
     return 1000 * velocity * angular_size / H0 / RAD_TO_ARCSEC
+
+
+################################################################################
+
+def get_absolute_magnitude(magnitude, velocity, H0=70):
+    """
+    GET_ABSOLUTE_MAGNITUDE: Computes an object's absolute magnitude given
+                       its apparent magnitude, its recessional veloctiy, and an
+                       assumed Hubble's constant.
+
+
+    ARGS:
+        (float) magnitude: Object's Apparent Magnitude
+        (float) velocity: Recessional Velocity in (km/s) Attributed to the
+                          Universe's Expansion Rate
+        (float) H0: Hubble's Constant in (km/s)/Mpc
+
+    RETURNS:
+        (float) absolute_magnitude: Object's Physical Size in kpc
+    """
+
+    return magnitude - 5 * np.log10(velocity / H0) - 25
 
 
 ################################################################################
@@ -121,7 +143,7 @@ def main(data_directory='.',
          update_dat_file=False,
          plot_pair=False,
          plot_hist=False,
-         plot_ks=True):
+         plot_statistical_tests=True):
     
     """
     Args:
@@ -136,6 +158,7 @@ def main(data_directory='.',
 
     coords_file    = os.path.join(data_directory, 'redshifts2.dat')
     results_file   = os.path.join(data_directory, data_file)
+    udg_param_file = os.path.join(data_directory, 'UDG2019_all_parameters.tsv')
     redshift_plot  = os.path.join(plot_directory, 'cz_hist.pdf')
     axisratio_plot = os.path.join(plot_directory, 'reff_axisratio.pdf')
     pair_plot      = os.path.join(plot_directory, 'pair.pdf')
@@ -149,10 +172,16 @@ def main(data_directory='.',
     r_eff = get_physical_size(df_results['cz'], df_results['ComaSize'], H0=70)
     df_results['Reff'] = r_eff
 
-    # Isolated
+    # Environment
     iso = ["Isolated" if val==0 else "Too Close" if val==-1 else "Companions"
            for val in df_results['NUM500']]
     df_results['Environment'] = iso
+
+    # Absolute Magnitude
+    absmag = get_absolute_magnitude(df_results['Mg'], df_results['cz'], H0=70)
+    df_results['absmag'] = absmag
+
+    df_results.to_csv(udg_param_file, index=False, sep='\t')
 
     color = 'Red'
 
@@ -265,7 +294,7 @@ def main(data_directory='.',
     if plot_pair:
     
         sns.set(style="ticks", color_codes=True)
-        features = ["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500", "Environment"]
+        features = ["cz", "Reff", "MUg0", "absmag", "b/a", "NUM500", "Environment"]
 
         markers   = ['^', 'x', 'o']
         col_list  = ['Blue',  'Green',  'Red']
@@ -327,7 +356,7 @@ def main(data_directory='.',
         replacements = {"cz":r'$cz \, \left( \mathrm{km/s} \right)$',
                         "Reff":r'$R_\mathrm{eff} \, \left( \mathrm{kpc} \right)$',
                         "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
-                        "Mg":r'$M_g \, \left( \mathrm{mag} \right)$',
+                        "absmag":r'$M_g \, \left( \mathrm{mag} \right)$',
                         "b/a":r'$b/a$',
                         "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$',
                         "Environment":r'$\mathrm{Environment}$'}
@@ -393,7 +422,7 @@ def main(data_directory='.',
 
     ############################################################################
 
-    if plot_ks:
+    if plot_statistical_tests:
 
         df_isolated  = df_results.loc[df_results["Environment"] == "Isolated"]
         df_companion = df_results.loc[df_results["Environment"] == "Companions"]
@@ -426,6 +455,6 @@ def main(data_directory='.',
 ################################################################################
 
 if __name__ == '__main__':
-    main(plot_pair=True, plot_ks=True)
+    main(plot_pair=True, plot_statistical_tests=True)
 
     # Need to implement plot!
