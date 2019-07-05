@@ -173,7 +173,7 @@ def main(data_directory='.',
     df_results['Reff'] = r_eff
 
     # Environment
-    iso = ["Isolated" if val==0 else "Too Close" if val==-1 else "Companions"
+    iso = ["Isolated" if val==0 else "Unconstrained" if val==-1 else "Interacting"
            for val in df_results['NUM500']]
     df_results['Environment'] = iso
 
@@ -323,7 +323,7 @@ def main(data_directory='.',
                 cmap  = cmap_dict.get(label)
                 print(idx, label, cmap)
 
-                if idx != 1:  # Exclude Too Close
+                if idx != 1:  # Exclude Unconstrained
                     sns.kdeplot(*new_args, **kwargs, cmap=cmap, shade_lowest=True)
         
         ############################################################################
@@ -335,9 +335,9 @@ def main(data_directory='.',
 
 
         # LEGEND LABELS
-        env_replacements = {"Companions":r"$\mathrm{Companions}$",
+        env_replacements = {"Interacting":r"$\mathrm{Interacting}$",
                             "Isolated":r"$\mathrm{Isolated}$",
-                            "Too Close":r"$cz<1000 \, \mathrm{km/s}$"}
+                            "Unconstrained":r"$\mathrm{Unconstrained}$"}
 
         # Replace Current Labels for LaTeX Labels
         labels = [env_replacements[env_label] for env_label in ax._legend_data.keys()]
@@ -424,22 +424,22 @@ def main(data_directory='.',
 
     if plot_statistical_tests:
 
-        df_isolated  = df_results.loc[df_results["Environment"] == "Isolated"]
-        df_companion = df_results.loc[df_results["Environment"] == "Companions"]
+        df_isolated    = df_results.loc[df_results["Environment"] == "Isolated"]
+        df_interacting = df_results.loc[df_results["Environment"] == "Interacting"]
 
         #fig, axes = plt.subplots(2, 3) #, subplot_kw=dict(polar=True))
 
         for idx, feature in enumerate(["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500"]):
 
             #print("\n", df_isolated[feature].dropna())
-            #print(df_companion[feature].dropna())
+            #print(df_interacting[feature].dropna())
 
             t_stat, t_pval = stats.ttest_ind(df_isolated[feature].dropna(),
-                                             df_companion[feature].dropna(),
+                                             df_interacting[feature].dropna(),
                                              equal_var=False)
 
             ks_stat, ks_pval = stats.ks_2samp(df_isolated[feature].dropna(),
-                                              df_companion[feature].dropna(),
+                                              df_interacting[feature].dropna(),
                                               alternative="two-sided")
 
             print("\nFeature:",       feature)
