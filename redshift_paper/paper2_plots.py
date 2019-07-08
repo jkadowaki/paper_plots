@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+import warnings
+warnings.simplefilter("ignore", UserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+
 import csv
 import errno
 import matplotlib
@@ -17,21 +21,6 @@ sns.set_style("darkgrid", {"legend.frameon":True})
 
 hist_color = 'Blue'
 hist_idx   = -1
-
-################################################################################
-
-class UDG:
-    
-    """
-    UDG: Builds a Class for UDGs.
-    """
-    
-    def __init__(self, name, ra, dec, angular_size, cz):
-        self.name = name
-        self.ra   = ra
-        self.dec  = dec
-        self.cz   = cz
-        self.angular_size = angular_size
 
 
 ################################################################################
@@ -140,10 +129,12 @@ def convert_name_to_coord(name):
 def main(data_directory='.',
          plot_directory='.',
          data_file='kadowaki19_redshifts.tsv',
+         pair_name='pair.pdf',
          update_dat_file=False,
          plot_pair=False,
-         plot_hist=False,
-         plot_statistical_tests=True):
+         plot_statistical_tests=True,
+         udg_only=False,
+         verbose=False):
     
     """
     Args:
@@ -156,12 +147,14 @@ def main(data_directory='.',
 
     ############################################################################
 
+
+    processed_file = 'UDG2019_all_parameters.tsv' if udg_only else 'candidates2019_all_parameters.tsv'
     coords_file    = os.path.join(data_directory, 'redshifts2.dat')
     results_file   = os.path.join(data_directory, data_file)
-    udg_param_file = os.path.join(data_directory, 'UDG2019_all_parameters.tsv')
+    udg_param_file = os.path.join(data_directory, processed_file)
     redshift_plot  = os.path.join(plot_directory, 'cz_hist.pdf')
     axisratio_plot = os.path.join(plot_directory, 'reff_axisratio.pdf')
-    pair_plot      = os.path.join(plot_directory, 'pair.pdf')
+    pair_plot      = os.path.join(plot_directory, pair_name)
     ks_plot        = os.path.join(plot_directory, 'ks_test.pdf')
 
     # Load Data
@@ -171,6 +164,8 @@ def main(data_directory='.',
     # Computes the Effictive Radius
     r_eff = get_physical_size(df_results['cz'], df_results['ComaSize'], H0=70)
     df_results['Reff'] = r_eff.round(decimals=2)
+    if udg_only:
+        df_results = df_results[df_results['Reff'] > 1.5]
 
     # Environment
     iso = ["Isolated" if val==0 else "Unconstrained" if val==-1 else "Interacting"
@@ -182,23 +177,25 @@ def main(data_directory='.',
     df_results['absmag'] = absmag.round(decimals=2)
 
     df_results.to_csv(udg_param_file, index=False, sep='\t')
-
-    color = 'Red'
+    df_results = df_results.sort_values(by=['Environment'])
+    df_results = df_results.reset_index(drop=True)
 
     ############################################################################
 
-    def remove_nan(args):
+    def remove_nan(args, verbose=False):
 
         nan_idx = np.array([])
         for a in args:
             # Ensures All List-like Data Structures are Pandas Series
             if type(a) == np.ndarray:
                 a = pd.Series(a)
-            print("\t", a.name)
+            if verbose:
+                print("\t", a.name)
             
             # Appends All Indices Corresponding to NaNs
             nan_idx = np.concatenate((nan_idx, a[pd.isna(a)].index.values))
-        print(nan_idx)
+        if verbose:
+            print(nan_idx)
         
         # Stores Arguments with NaNs Removed
         new_args = []
@@ -226,12 +223,8 @@ def main(data_directory='.',
             print(new_args)
 
         return new_args
-    
-    ############################################################################
-    
-    def get_color():
-        pass
-    
+
+
     ############################################################################
 
     def change_color():
@@ -245,9 +238,10 @@ def main(data_directory='.',
 
 
     def hist(*args, **kwargs):
-        print("\nhist")
+        if verbose:
+            print("\nhist")
 
-        new_args = remove_repeating_lists(remove_nan(args))
+        new_args = remove_repeating_lists(remove_nan(args, verbose=verbose), verbose=verbose)
         large_args = []
         min_y, max_y = 9999999, -9999999
         
@@ -260,12 +254,13 @@ def main(data_directory='.',
                 if max(a) > max_y:
                     max_y = max(a)
 
-        print(large_args)
+        if verbose:
+            print(large_args)
 
         if len(large_args):
 
             hist_bins = np.linspace(min(a), max(a), 6)
-            dist = sns.distplot(*large_args, rug=True, kde=True, hist=False, norm_hist=True, color=hist_color,  bins = hist_bins)
+            dist = sns.distplot(*large_args, rug=True, kde=True, hist=False, norm_hist=True, color=hist_color,  bins=hist_bins)
             sns.distplot(*large_args, kde=False, hist=True, norm_hist=True, color=hist_color, bins=hist_bins)
 
             axes      = dist.axes
@@ -275,9 +270,6 @@ def main(data_directory='.',
 
             if curr_ylim > 5*ylimit or ylimit > curr_ylim:
                 axes.set_ylim(0, ylimit/0.8)
-                #ax2 = axes.twinx()
-                #ax2.set_ylim(0, ylimit/0.8)
-                #ax2.ytick
 
             axes.xaxis.set_tick_params(labelsize=50)
             axes.yaxis.set_tick_params(labelsize=50)
@@ -296,15 +288,13 @@ def main(data_directory='.',
         sns.set(style="ticks", color_codes=True)
         features = ["cz", "Reff", "MUg0", "absmag", "b/a", "NUM500", "Environment"]
 
-        markers   = ['^', 'x', 'o']
-        col_list  = ['Blue',  'Green',  'Red']
-        cmap_list = ['Blues', 'Greens', 'Reds']
-        env_list  = df_results["Environment"].unique()
+        markers   = ['^',     'o']    if udg_only else ['^', 'x', 'o']
+        col_list  = ['Blue',  'Red']  if udg_only else ['Blue',  'Green',  'Red']
+        cmap_list = ['Blues', 'Reds'] if udg_only else ['Blues', 'Greens', 'Reds']
+        env_list  = sorted(df_results["Environment"].unique())
         col_dict  = dict(zip(env_list, col_list))
         cmap_dict = dict(zip(env_list, cmap_list))
-        
-        colors = sns.color_palette("Set3", 3)
-        
+
         ax = sns.PairGrid(data=df_results[features],
                           hue="Environment",
                           palette=col_dict,
@@ -314,14 +304,17 @@ def main(data_directory='.',
         ############################################################################
         
         def contours(*args,**kwargs):
-            print("\ncontours")
-            new_args = remove_repeating_lists(remove_nan(args))
+
+            if verbose:
+                print("\ncontours")
+            new_args = remove_repeating_lists(remove_nan(args, verbose=verbose), verbose=verbose)
             
             if len(new_args) > 1:
                 idx = args[0].index.values[0]
                 label = df_results["Environment"].iloc[idx]
                 cmap  = cmap_dict.get(label)
-                print(idx, label, cmap)
+                if verbose:
+                    print(idx, label, cmap)
 
                 if idx != 1:  # Exclude Unconstrained
                     sns.kdeplot(*new_args, **kwargs, cmap=cmap, shade_lowest=True)
@@ -380,35 +373,6 @@ def main(data_directory='.',
 
 
     ############################################################################
-    
-    if plot_hist:
-
-        # HISTOGRAM OF RECESSIONAL VELOCITIES
-        # Sturge's Rule on Number of Bins
-        num_bins = 12 #int(np.ceil( 1 + 3.322 * np.log(np.size(df_results['cz'])) ))
-
-        # Histogram
-        ax = sns.distplot(df_results['cz'], bins=num_bins,
-                          rug=True, kde=False,
-                          axlabel=r"$cz \, \mathrm{(km/s)}$")
-                          
-        # Save & Display Figure
-        fig = ax.get_figure()
-        fig.savefig(redshift_plot, bbox_inches = 'tight')
-
-
-        # Scatter Plot
-        data_okay = ~df_results['b/a'].isna() * ~r_eff.isna()
-        colors = sns.color_palette("hls", max(df_results['SOURCE']))
-        cv = [colors[idx-1] + (1,) for idx in df_results['SOURCE'][data_okay].values]
-        
-        ax = sns.jointplot(r_eff, df_results['b/a'], space=0, joint_kws={"color":cv}).set_axis_labels( r"$r_\mathrm{eff} \, \mathrm{(kpc)}$", r"$b/a$")
-
-        # Save & Display Figure
-        ax.savefig(axisratio_plot, bbox_inches = 'tight')
-
-
-    ############################################################################
 
     if update_dat_file:
 
@@ -431,9 +395,6 @@ def main(data_directory='.',
 
         for idx, feature in enumerate(["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500"]):
 
-            #print("\n", df_isolated[feature].dropna())
-            #print(df_interacting[feature].dropna())
-
             t_stat, t_pval = stats.ttest_ind(df_isolated[feature].dropna(),
                                              df_interacting[feature].dropna(),
                                              equal_var=False)
@@ -455,6 +416,11 @@ def main(data_directory='.',
 ################################################################################
 
 if __name__ == '__main__':
-    main(plot_pair=True, plot_statistical_tests=True)
+
+    print("\n----------------- ALL CANDIDATES -----------------")
+    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_all.pdf')
+
+    print("\n-------------------- ALL UDGS --------------------")
+    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_udgs.pdf', udg_only=True)
 
     # Need to implement plot!
