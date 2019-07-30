@@ -81,11 +81,11 @@ def convert(str):
 ################################################################################
 
 def read_data(file):
-
+    #
     dict_list = []
     columns = []
     #types = []
-
+    #
     with open(file) as f:
         for idx, line in enumerate(f):
             if idx == 0:
@@ -93,35 +93,42 @@ def read_data(file):
             else:
                 dict_list.append( {key:val for key,val
                                     in zip(columns, line.split())} )
-
-    return pd.DataFrame.from_dict(dict_list).astype(
-        {'ALTNAME':str, 'FIELD':str, 'MUg0':float, 'Mg':float, 'NAME':str,
-         'ComaSize':float, 'SOURCE':int, 'b/a':float, 'cz':int, 'czerr':float,
-         'NUM500':int, 'NUM1000':int} )
+    #
+    try:
+        return pd.DataFrame.from_dict(dict_list).astype(
+            {'ALTNAME':str, 'FIELD':str, 'MUg0':float, 'Mg':float, 'NAME':str,
+             'ComaSize':float, 'Reff':float, 'SOURCE':int, 'b/a':float,
+             'cz':int, 'czerr':float, 'NUM500':int, 'NUM1000':int, 'udg':bool,
+             'ra':float, 'dec':float, 'z':float} )
+    except:
+        return pd.DataFrame.from_dict(dict_list).astype(
+            {'ALTNAME':str, 'FIELD':str, 'MUg0':float, 'Mg':float, 'NAME':str,
+            'ComaSize':float, 'SOURCE':int, 'b/a':float, 'cz':int, 'czerr':float,
+            'NUM500':int, 'NUM1000':int} )
 
 ################################################################################
 
 def convert_name_to_coord(name):
-    
+    #
     n=2 # split string after n characters
     positive = True
-    
+    #
     try:
         ra, dec = name.strip('SMDG').split('+')
     except:
         ra, dec  = name.strip('SMDG').split('-')
         positive = False
-
+    #
     ra_hour, ra_min, ra_sec, ra_p = [int(ra[i:i+n]) for i in range(0, len(ra), n)]
     dec_dec, dec_min, dec_sec = [int(dec[i:i+n]) for i in range(0, len(dec), n)]
-
+    #
     new_ra = (int(ra_hour)/24. + int(ra_min)/24./60. + float(ra_sec + ra_p)/24./3600.) * 360.
     new_dec = int(dec_dec) + int(dec_min)/60. + float(dec_sec)/3600.
-
+    #
     if positive:
-        return round(new_ra, 6), round(new_dec, 6)
-
-    return round(new_ra, 6), -round(new_dec, 6)
+        return np.round(new_ra, 6), np.round(new_dec, 6)
+    #
+    return np.round(new_ra, 6), -np.round(new_dec, 6)
 
 
 ################################################################################
@@ -130,6 +137,7 @@ def main(data_directory='.',
          plot_directory='.',
          data_file='kadowaki19_redshifts.tsv',
          pair_name='pair.pdf',
+         cumsum_name='cumsum_all.pdf',
          update_dat_file=False,
          plot_pair=False,
          plot_statistical_tests=True,
@@ -144,37 +152,53 @@ def main(data_directory='.',
         (bool) update_dat_file:
     """
 
-
     ############################################################################
 
 
     processed_file = 'UDG2019_all_parameters.tsv' if udg_only else 'candidates2019_all_parameters.tsv'
-    coords_file    = os.path.join(data_directory, 'redshifts2.dat')
+    coords_file    = os.path.join(data_directory, 'redshifts2_udgs.dat' if udg_only else 'redshifts2_candidates.dat')
     results_file   = os.path.join(data_directory, data_file)
     udg_param_file = os.path.join(data_directory, processed_file)
     redshift_plot  = os.path.join(plot_directory, 'cz_hist.pdf')
     axisratio_plot = os.path.join(plot_directory, 'reff_axisratio.pdf')
     pair_plot      = os.path.join(plot_directory, pair_name)
-    ks_plot        = os.path.join(plot_directory, 'ks_test.pdf')
+    ks_plot        = os.path.join(plot_directory, cumsum_name)
 
     # Load Data
     df_results = read_data(results_file)
 
 
-    # Computes the Effictive Radius
-    r_eff = get_physical_size(df_results['cz'], df_results['ComaSize'], H0=70)
-    df_results['Reff'] = r_eff.round(decimals=2)
-    if udg_only:
-        df_results = df_results[df_results['Reff'] > 1.5]
+    # Effictive Radius
+    if 'Reff' not in df_results.columns.values:
+        r_eff = get_physical_size(df_results['cz'], df_results['ComaSize'], H0=70)
+        df_results['Reff'] = r_eff.round(decimals=2)
+        df_results['udg']  = df_results['Reff']>1.5
 
     # Environment
-    iso = ["Isolated" if val==0 else "Unconstrained" if val==-1 else "Interacting"
-           for val in df_results['NUM500']]
-    df_results['Environment'] = iso
+    if 'Environment' not in df_results.columns.values:
+        iso = ["Sparse" if val==0 else "Unconstrained" if val==-1 else "Dense"
+               for val in df_results['NUM500']]
+        df_results['Environment'] = iso
 
+    # Redshift
+    if 'z' not in df_results.columns.values:
+        df_results['z'] = np.round(df_results['cz'].values / 299792, 5)
+
+    # RA/dec Coordinates
+    if 'ra' not in df_results.columns.values:
+        coords_list = [convert_name_to_coord(n) for n in df_results['NAME'].values]
+        ra,dec = map(list,zip(*coords_list))
+        df_results['ra']  = ra
+        df_results['dec'] = dec
+    
     # Absolute Magnitude
-    absmag = get_absolute_magnitude(df_results['Mg'], df_results['cz'], H0=70)
-    df_results['absmag'] = absmag.round(decimals=2)
+    if 'absmag' not in df_results.columns.values:
+        absmag = get_absolute_magnitude(df_results['Mg'], df_results['cz'], H0=70)
+        df_results['absmag'] = absmag.round(decimals=2)
+
+    # Filter UDGs
+    if udg_only:
+        df_results = df_results[df_results['udg'] == True]
 
     df_results.to_csv(udg_param_file, index=False, sep='\t')
     df_results = df_results.sort_values(by=['Environment'])
@@ -317,7 +341,7 @@ def main(data_directory='.',
                     print(idx, label, cmap)
 
                 if idx != 1:  # Exclude Unconstrained
-                    sns.kdeplot(*new_args, **kwargs, cmap=cmap, shade_lowest=True)
+                    sns.kdeplot(*new_args, cmap=cmap, shade_lowest=True)
         
         ############################################################################
 
@@ -328,8 +352,8 @@ def main(data_directory='.',
 
 
         # LEGEND LABELS
-        env_replacements = {"Interacting":r"$\mathrm{Interacting}$",
-                            "Isolated":r"$\mathrm{Isolated}$",
+        env_replacements = {"Dense":r"$\mathrm{Dense}$",
+                            "Sparse":r"$\mathrm{Sparse}$",
                             "Unconstrained":r"$\mathrm{Unconstrained}$"}
 
         # Replace Current Labels for LaTeX Labels
@@ -375,32 +399,35 @@ def main(data_directory='.',
     ############################################################################
 
     if update_dat_file:
-
-        z = df_results['cz'].values / 299792
-        coords_list = [convert_name_to_coord(n) + (round(z[idx],6),) for idx,n in enumerate(df_results['NAME'].values)]
-
+        
         with open(coords_file, 'w') as f:
-            for t in coords_list:
-                f.write('\t'.join(str(s) for s in t) + '\n')
+            f.write(df_results[['ra', 'dec', 'z', 'Environment']].to_string(index=False, header=False))
 
 
     ############################################################################
 
     if plot_statistical_tests:
 
-        df_isolated    = df_results.loc[df_results["Environment"] == "Isolated"]
-        df_interacting = df_results.loc[df_results["Environment"] == "Interacting"]
+        df_sparse    = df_results.loc[df_results["Environment"] == "Sparse"]
+        df_dense     = df_results.loc[df_results["Environment"] == "Dense"]
+        feature_list = ["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500"]
 
-        #fig, axes = plt.subplots(2, 3) #, subplot_kw=dict(polar=True))
+        box_len = 3
+        num_row = 2
+        num_col = int(np.ceil( len(feature_list)/num_row))
 
-        for idx, feature in enumerate(["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500"]):
 
-            t_stat, t_pval = stats.ttest_ind(df_isolated[feature].dropna(),
-                                             df_interacting[feature].dropna(),
+        #fig, axes = plt.subplots(num_row, num_col, figsize=(num_row * box_len, num_col * box_len)) #, subplot_kw=dict(polar=True))
+        #   #g = sns.FacetGrid(df_results, col=feature_list, height=4)
+
+        for idx, feature in enumerate(feature_list):
+
+            t_stat, t_pval = stats.ttest_ind(df_sparse[feature].dropna(),
+                                             df_dense[feature].dropna(),
                                              equal_var=False)
 
-            ks_stat, ks_pval = stats.ks_2samp(df_isolated[feature].dropna(),
-                                              df_interacting[feature].dropna(),
+            ks_stat, ks_pval = stats.ks_2samp(df_sparse[feature].dropna(),
+                                              df_dense[feature].dropna(),
                                               alternative="two-sided")
 
             print("\nFeature:",       feature)
@@ -409,18 +436,28 @@ def main(data_directory='.',
             print("KS-statistic:",    ks_stat)
             print("P-value (2tail):", ks_pval)
 
-            #axes[int(np.floor(idx/2)), idx%3].plot(stats.cumfreq) =
-            #axes[int(np.floor(idx/2)), idx%3].set_title(feature)
+            #   #axes[int(np.floor(idx/2)), idx%3].plot(stats.cumfreq) =
+            #   #axes[int(np.floor(idx/2)), idx%3].set_title(feature)
 
+            #axes[idx] = sns.distplot(df_results[feature], hist_kws=dict(cumulative=True), kde_kws=dict(cumulative=True))
+            #   #g.map(sns.distplot(x,
+            #   #hist_kws=dict(cumulative=True),
+            #   #kde_kws=dict(cumulative=True))
+
+            #   #dist = sns.distplot(*large_args, rug=True, kde=True, hist=False, norm_hist=True, color=hist_color,
+            #   #                    bins=hist_bins)
+            #   #sns.distplot(*large_args, kde=False, hist=True, norm_hist=True, color=hist_color, bins=hist_bins)
+
+    #plt.savefig(ks_plot, bbox_inches='tight')
 
 ################################################################################
 
 if __name__ == '__main__':
 
     print("\n----------------- ALL CANDIDATES -----------------")
-    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_all.pdf')
+    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_all.pdf', cumsum_name='cumsum_all.pdf', udg_only=False, update_dat_file=True)
 
     print("\n-------------------- ALL UDGS --------------------")
-    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_udgs.pdf', udg_only=True)
+    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_udgs.pdf', cumsum_name='cumsum_udgs.pdf', udg_only=True, update_dat_file=True)
 
-    # Need to implement plot!
+   # Need to implement plot!
