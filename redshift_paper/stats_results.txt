@@ -1,0 +1,155 @@
+----------------- ALL CANDIDATES -----------------
+
+~~~~~LOCAL~~~~~~
+
+Feature: cz
+T-statistic: 0.38663892118021603
+P-value (2tail): 0.7014005158253194
+KS-statistic: 0.2545454545454545
+P-value (2tail): 0.31790271902315814
+
+Feature: Reff
+T-statistic: 0.9148069407325038
+P-value (2tail): 0.3665109351660243
+KS-statistic: 0.2714285714285714
+P-value (2tail): 0.2997259817309166
+
+Feature: MUg0
+T-statistic: 0.974391888125972
+P-value (2tail): 0.33564278593474195
+KS-statistic: 0.17857142857142858
+P-value (2tail): 0.7881807630596063
+
+Feature: Mg
+T-statistic: -1.2522083793336836
+P-value (2tail): 0.21744218303496604
+KS-statistic: 0.32142857142857145
+P-value (2tail): 0.14380419300304925
+
+Feature: b/a
+T-statistic: 0.15906980271225277
+P-value (2tail): 0.8745220670462621
+KS-statistic: 0.31100478468899523
+P-value (2tail): 0.21823640522419208
+
+Feature: NUM500
+T-statistic: -6.29724567015636
+P-value (2tail): 7.070431541345946e-07
+KS-statistic: 1.0
+P-value (2tail): 7.771561172376096e-15
+
+~~~~~~GLOBAL~~~~~~
+
+Feature: cz
+T-statistic: -3.9158044991842926
+P-value (2tail): 0.0008007581928292828
+KS-statistic: 0.7362637362637363
+P-value (2tail): 7.346977137778765e-08
+
+Feature: Reff
+T-statistic: -3.6729659176535074
+P-value (2tail): 0.0009509948953634807
+KS-statistic: 0.7
+P-value (2tail): 1.4264022949461719e-06
+
+Feature: MUg0
+T-statistic: 1.8195638802848646
+P-value (2tail): 0.07713952731001576
+KS-statistic: 0.3111111111111111
+P-value (2tail): 0.13396851638616636
+
+Feature: Mg
+T-statistic: -2.4649880660224404
+P-value (2tail): 0.02005653283891365
+KS-statistic: 0.29444444444444445
+P-value (2tail): 0.17475417104025515
+
+Feature: b/a
+T-statistic: -0.9236186266377129
+P-value (2tail): 0.3628426823523049
+KS-statistic: 0.25426944971537
+P-value (2tail): 0.40141526440979547
+
+Feature: NUM500
+T-statistic: -4.70115364263303
+P-value (2tail): 2.0664249085017932e-05
+KS-statistic: 0.47619047619047616
+P-value (2tail): 0.002444756621631572
+
+-------------------- ALL UDGS --------------------
+
+~~~~~~LOCAL~~~~~~
+
+Feature: cz
+T-statistic: 0.39289648680167844
+P-value (2tail): 0.6987085905591465
+KS-statistic: 0.2826086956521739
+P-value (2tail): 0.36250901237763167
+
+Feature: Reff
+T-statistic: 1.57119947255598
+P-value (2tail): 0.1262937146720091
+KS-statistic: 0.3451086956521739
+P-value (2tail): 0.16379327950974487
+
+Feature: MUg0
+T-statistic: 1.628690785405793
+P-value (2tail): 0.11358673348878034
+KS-statistic: 0.26358695652173914
+P-value (2tail): 0.4417384702255751
+
+Feature: Mg
+T-statistic: -1.7959694722579322
+P-value (2tail): 0.0820823532012429
+KS-statistic: 0.44565217391304346
+P-value (2tail): 0.032417722555715955
+
+Feature: b/a
+T-statistic: -0.48342604283585894
+P-value (2tail): 0.6326224525485055
+KS-statistic: 0.3819444444444444
+P-value (2tail): 0.12757903934825243
+
+Feature: NUM500
+T-statistic: -5.546762531931158
+P-value (2tail): 1.417355897909129e-05
+KS-statistic: 1.0
+P-value (2tail): 5.303502081943634e-11
+
+~~~~~~GLOBAL~~~~~~
+
+Feature: cz
+T-statistic: 0.4766379500797145
+P-value (2tail): 0.653406394194536
+KS-statistic: 0.5
+P-value (2tail): 0.11173433154857315
+
+Feature: Reff
+T-statistic: 0.5420531583423306
+P-value (2tail): 0.6080411660613418
+KS-statistic: 0.2878787878787879
+P-value (2tail): 0.7075530945499986
+
+Feature: MUg0
+T-statistic: 1.2182259672054794
+P-value (2tail): 0.2682801519451694
+KS-statistic: 0.2727272727272727
+P-value (2tail): 0.7763780859756092
+
+Feature: Mg
+T-statistic: -0.5299869728116927
+P-value (2tail): 0.6124878414357084
+KS-statistic: 0.22727272727272727
+P-value (2tail): 0.9084282799453078
+
+Feature: b/a
+T-statistic: -1.1328167664183517
+P-value (2tail): 0.28901737931321786
+KS-statistic: 0.39285714285714285
+P-value (2tail): 0.35086073058002665
+
+Feature: NUM500
+T-statistic: -4.15139122790704
+P-value (2tail): 0.00019423080420300268
+KS-statistic: 0.5
+P-value (2tail): 0.11173433154857315

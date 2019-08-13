@@ -19,7 +19,7 @@ import seaborn as sns
 sns.set(font_scale=25, rc={'text.usetex':True}, style="darkgrid", color_codes=True)
 sns.set_style("darkgrid", {"legend.frameon":True})
 
-hist_color = 'Blue'
+hist_color = 'Green'
 hist_idx   = -1
 
 
@@ -81,11 +81,12 @@ def convert(str):
 ################################################################################
 
 def read_data(file):
-    #
+    """
+    """
+
     dict_list = []
     columns = []
-    #types = []
-    #
+
     with open(file) as f:
         for idx, line in enumerate(f):
             if idx == 0:
@@ -93,18 +94,20 @@ def read_data(file):
             else:
                 dict_list.append( {key:val for key,val
                                     in zip(columns, line.split())} )
-    #
-    try:
-        return pd.DataFrame.from_dict(dict_list).astype(
+
+    df = pd.DataFrame.from_dict(dict_list).astype(
             {'ALTNAME':str, 'FIELD':str, 'MUg0':float, 'Mg':float, 'NAME':str,
-             'ComaSize':float, 'Reff':float, 'SOURCE':int, 'b/a':float,
-             'cz':int, 'czerr':float, 'NUM500':int, 'NUM1000':int, 'udg':bool,
-             'ra':float, 'dec':float, 'z':float} )
-    except:
-        return pd.DataFrame.from_dict(dict_list).astype(
-            {'ALTNAME':str, 'FIELD':str, 'MUg0':float, 'Mg':float, 'NAME':str,
-            'ComaSize':float, 'SOURCE':int, 'b/a':float, 'cz':int, 'czerr':float,
-            'NUM500':int, 'NUM1000':int} )
+            'ComaSize':float, 'Reff':float, 'SOURCE':int, 'b/a':float,
+            'cz':int, 'czerr':float, 'NUM500':int, 'NUM1000':int, 'udg':str,
+            'ra':float, 'dec':float, 'z':float, 'NUV':str, 'absmag':float,
+            'Environment':str, 'Member':str} )
+
+    # Manually Convert String to Boolean
+    df['udg']    = df['udg']=='TRUE'
+    df['Member'] = ['Member' if obj=='TRUE' else 'Non-Member' for obj in df['Member']]
+
+    return df
+
 
 ################################################################################
 
@@ -130,43 +133,83 @@ def convert_name_to_coord(name):
     #
     return np.round(new_ra, 6), -np.round(new_dec, 6)
 
+################################################################################
+
+def change_color(three_colors=False):
+    
+    global hist_color
+    
+    if not three_colors:
+        if hist_color == 'Orange':
+            hist_color = 'Green'
+        else:
+            hist_color = 'Orange'
+    else:
+        if hist_color == 'Green':
+            hist_color = 'Orange'
+        elif hist_color == 'Orange':
+            hist_color = 'Blue'
+        else:
+            hist_color = 'Green'
 
 ################################################################################
 
 def main(data_directory='.',
          plot_directory='.',
-         data_file='kadowaki19_redshifts.tsv',
          pair_name='pair.pdf',
          cumsum_name='cumsum_all.pdf',
          update_dat_file=False,
          plot_pair=False,
          plot_statistical_tests=True,
          udg_only=False,
-         verbose=False):
+         local_env=True,
+         verbose=False,
+         hack_color_fix=False):
     
     """
     Args:
         (str)  data_directory:
         (str)  plot_directory:
-        (str)  data_file:
+        (str)
         (bool) update_dat_file:
     """
 
     ############################################################################
 
+    # Load Appropriate Parameter File
+    udg_param_file = os.path.join(data_directory,
+                     'UDG2019_all_parameters.tsv' if udg_only else
+                     'candidates2019_all_parameters.tsv')
 
-    processed_file = 'UDG2019_all_parameters.tsv' if udg_only else 'candidates2019_all_parameters.tsv'
-    coords_file    = os.path.join(data_directory, 'redshifts2_udgs.dat' if udg_only else 'redshifts2_candidates.dat')
-    results_file   = os.path.join(data_directory, data_file)
-    udg_param_file = os.path.join(data_directory, processed_file)
-    redshift_plot  = os.path.join(plot_directory, 'cz_hist.pdf')
-    axisratio_plot = os.path.join(plot_directory, 'reff_axisratio.pdf')
+    # Save to Appropriate Coordinate File
+    if udg_only:
+        if local_env: coords='redshifts2_local_udgs.dat'
+        else:         coords='redshifts2_global_udgs.dat'
+    else:
+        if local_env: coords='redshifts2_local_candidates.dat'
+        else:         coords='redshifts2_global_candidates.dat'
+    coords_file = os.path.join(data_directory, coords)
+
+    # Save to Plots
     pair_plot      = os.path.join(plot_directory, pair_name)
     ks_plot        = os.path.join(plot_directory, cumsum_name)
 
-    # Load Data
-    df_results = read_data(results_file)
+    three_colors = not udg_only and local_env
 
+    global hist_color
+    if three_colors:
+        hist_color = 'Green'
+    else:
+        if hack_color_fix:
+            change_color(three_colors=three_colors)
+
+    ############################################################################
+
+    df_results = read_data(udg_param_file)
+    
+    """
+    # Load Data
+    df_results = read_data(results_file, local_env=local_env)
 
     # Effictive Radius
     if 'Reff' not in df_results.columns.values:
@@ -174,7 +217,7 @@ def main(data_directory='.',
         df_results['Reff'] = r_eff.round(decimals=2)
         df_results['udg']  = df_results['Reff']>1.5
 
-    # Environment
+    # Local Environment
     if 'Environment' not in df_results.columns.values:
         iso = ["Sparse" if val==0 else "Unconstrained" if val==-1 else "Dense"
                for val in df_results['NUM500']]
@@ -190,7 +233,7 @@ def main(data_directory='.',
         ra,dec = map(list,zip(*coords_list))
         df_results['ra']  = ra
         df_results['dec'] = dec
-    
+
     # Absolute Magnitude
     if 'absmag' not in df_results.columns.values:
         absmag = get_absolute_magnitude(df_results['Mg'], df_results['cz'], H0=70)
@@ -201,8 +244,12 @@ def main(data_directory='.',
         df_results = df_results[df_results['udg'] == True]
 
     df_results.to_csv(udg_param_file, index=False, sep='\t')
-    df_results = df_results.sort_values(by=['Environment'])
-    df_results = df_results.reset_index(drop=True)
+    """
+                                  
+    environment_scale = 'Environment' if local_env else 'Member'
+    df_results        = df_results.sort_values(by=[environment_scale])
+    df_results        = df_results.reset_index(drop=True)
+
 
     ############################################################################
 
@@ -251,16 +298,6 @@ def main(data_directory='.',
 
     ############################################################################
 
-    def change_color():
-
-        global hist_color
-
-        if hist_color == 'Red':
-            hist_color = 'Blue'
-        else:
-            hist_color = 'Red'
-
-
     def hist(*args, **kwargs):
         if verbose:
             print("\nhist")
@@ -270,7 +307,7 @@ def main(data_directory='.',
         min_y, max_y = 9999999, -9999999
         
         for a in new_args:
-            if len(a) > 10:
+            if len(a) > 4:
                 large_args.append(a)
                 
                 if min(a) < min_y:
@@ -298,29 +335,29 @@ def main(data_directory='.',
             axes.xaxis.set_tick_params(labelsize=50)
             axes.yaxis.set_tick_params(labelsize=50)
 
-            change_color()
+            change_color(three_colors = not udg_only and local_env)
 
     ############################################################################
 
     def scatter(*args,**kwargs):
-        plt.scatter(*args, **kwargs, s=15, edgecolor='k', linewidth=0.001)
+        plt.scatter(*args, **kwargs, s=24, edgecolor='k', linewidth=0.1)
         
     ############################################################################
 
     if plot_pair:
     
         sns.set(style="ticks", color_codes=True)
-        features = ["cz", "Reff", "MUg0", "absmag", "b/a", "NUM500", "Environment"]
+        features = ["cz", "Reff", "MUg0", "absmag", "b/a", "NUM500", environment_scale]
 
-        markers   = ['^',     'o']    if udg_only else ['^', 'x', 'o']
-        col_list  = ['Blue',  'Red']  if udg_only else ['Blue',  'Green',  'Red']
-        cmap_list = ['Blues', 'Reds'] if udg_only else ['Blues', 'Greens', 'Reds']
-        env_list  = sorted(df_results["Environment"].unique())
+        markers   = ['^',     'o']        if udg_only else ['^',      'o',       'x']
+        col_list  = ['Green',  'Orange']  if udg_only else ['Green',  'Orange',  'Blue' ]
+        cmap_list = ['Greens', 'Oranges'] if udg_only else ['Greens', 'Oranges', 'Blues']
+        env_list  = sorted(df_results[environment_scale].unique())
         col_dict  = dict(zip(env_list, col_list))
         cmap_dict = dict(zip(env_list, cmap_list))
 
         ax = sns.PairGrid(data=df_results[features],
-                          hue="Environment",
+                          hue=environment_scale ,
                           palette=col_dict,
                           diag_sharey=False,
                           hue_kws={"marker":markers})
@@ -335,7 +372,7 @@ def main(data_directory='.',
             
             if len(new_args) > 1:
                 idx = args[0].index.values[0]
-                label = df_results["Environment"].iloc[idx]
+                label = df_results[environment_scale].iloc[idx]
                 cmap  = cmap_dict.get(label)
                 if verbose:
                     print(idx, label, cmap)
@@ -352,9 +389,12 @@ def main(data_directory='.',
 
 
         # LEGEND LABELS
-        env_replacements = {"Dense":r"$\mathrm{Dense}$",
-                            "Sparse":r"$\mathrm{Sparse}$",
-                            "Unconstrained":r"$\mathrm{Unconstrained}$"}
+        if local_env:
+            env_replacements = {'Dense':r"$\mathrm{Dense}$",   'Sparse':r"$\mathrm{Sparse}$"}
+        else:
+            env_replacements = {'Member':r"$\mathrm{Member}$", 'Non-Member':r"$\mathrm{Non}$-$\mathrm{Member}$"}
+        if not udg_only:
+            env_replacements["Unconstrained"] = r"$\mathrm{Unconstrained}$"
 
         # Replace Current Labels for LaTeX Labels
         labels = [env_replacements[env_label] for env_label in ax._legend_data.keys()]
@@ -365,7 +405,8 @@ def main(data_directory='.',
         # ADD LEGEND & Fix Placement
         ax.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=3, fontsize=15,
                       frameon=True, edgecolor='k', markerscale=2.5,
-                      title=r'$\mathrm{Environment}$', title_fontsize=20)
+                      title=r"$\mathrm{Local \, Environment}$" if local_env else r"$\mathrm{Coma \, Membership}$",
+                      title_fontsize=20)
         ax.fig.subplots_adjust(top=1.05, bottom=0.12)
 
 
@@ -375,8 +416,8 @@ def main(data_directory='.',
                         "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
                         "absmag":r'$M_g \, \left( \mathrm{mag} \right)$',
                         "b/a":r'$b/a$',
-                        "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$',
-                        "Environment":r'$\mathrm{Environment}$'}
+                        "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$'}
+        #"Environment":r'$\mathrm{Environment}$'}
 
         for x_idx in range(len(features)-1):
             for y_idx in range(len(features)-1):
@@ -401,15 +442,19 @@ def main(data_directory='.',
     if update_dat_file:
         
         with open(coords_file, 'w') as f:
-            f.write(df_results[['ra', 'dec', 'z', 'Environment']].to_string(index=False, header=False))
+            f.write(df_results[['ra', 'dec', 'z', environment_scale, 'Reff']].to_string(index=False, header=False))
 
 
     ############################################################################
 
     if plot_statistical_tests:
 
-        df_sparse    = df_results.loc[df_results["Environment"] == "Sparse"]
-        df_dense     = df_results.loc[df_results["Environment"] == "Dense"]
+        if local_env:
+            df_sparse    = df_results.loc[df_results[environment_scale] == "Sparse"]
+            df_dense     = df_results.loc[df_results[environment_scale] == "Dense"]
+        else:
+            df_sparse    = df_results.loc[df_results[environment_scale] == "Non-Member"]
+            df_dense     = df_results.loc[df_results[environment_scale] == "Member"]
         feature_list = ["cz", "Reff", "MUg0", "Mg", "b/a", "NUM500"]
 
         box_len = 3
@@ -455,9 +500,26 @@ def main(data_directory='.',
 if __name__ == '__main__':
 
     print("\n----------------- ALL CANDIDATES -----------------")
-    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_all.pdf', cumsum_name='cumsum_all.pdf', udg_only=False, update_dat_file=True)
+    print("\n~~~~~LOCAL~~~~~~")
+    main(plot_pair=True, plot_statistical_tests=True,
+         pair_name='pair_all_local.pdf', cumsum_name='cumsum_all_local.pdf',
+         udg_only=False, local_env=True, update_dat_file=True, verbose=False)
+    
+    print("\n~~~~~~GLOBAL~~~~~~")
+    main(plot_pair=True, plot_statistical_tests=True,
+         pair_name='pair_all_global.pdf', cumsum_name='cumsum_all_global.pdf',
+         udg_only=False, local_env=False, update_dat_file=True,
+         hack_color_fix=True)
 
     print("\n-------------------- ALL UDGS --------------------")
-    main(plot_pair=True, plot_statistical_tests=True, pair_name='pair_udgs.pdf', cumsum_name='cumsum_udgs.pdf', udg_only=True, update_dat_file=True)
-
-   # Need to implement plot!
+    print("\n~~~~~~LOCAL~~~~~~")
+    main(plot_pair=True, plot_statistical_tests=True,
+         pair_name='pair_udgs_local.pdf', cumsum_name='cumsum_udgs_local.pdf',
+         udg_only=True, local_env=True, update_dat_file=True,
+         hack_color_fix=False)
+         
+    print("\n~~~~~~GLOBAL~~~~~~")
+    main(plot_pair=True, plot_statistical_tests=True,
+         pair_name='pair_udgs_global.pdf', cumsum_name='cumsum_udgs_global.pdf',
+         udg_only=True, local_env=False, update_dat_file=True,
+         hack_color_fix=True)
