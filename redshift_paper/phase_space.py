@@ -132,7 +132,7 @@ def phase_space_plot(data, coma, plot_fname, local_env=True,
     legend = ax2.legend(*zip(*unique), fancybox=True, prop={'size': 10},
                         loc=legend_loc, frameon=True, title_fontsize=12,
                         title=r'$\mathrm{Local \, Environment}$' if local_env
-                              else r'$\mathrm{Coma Membership}$')
+                              else r'$\mathrm{Coma \, Membership}$')
 
     for legend_handle in legend.legendHandles:
         legend_handle._sizes = [marker_size * 1.5]
