@@ -40,9 +40,9 @@ def phase_space_plot(separation, velocity, size, env,
     large_thres = 3.5 # kpc
     
     if local_env:
-        label = [ '$\mathrm{Dense}$'  if val==b'Dense'  else \
-                  '$\mathrm{Sparse}$' if val==b'Sparse' else \
-                  '$\mathrm{Unconstrained}$' for val in env]
+        label = [ r'$\mathrm{Dense}$'  if val==b'Dense'  else \
+                  r'$\mathrm{Sparse}$' if val==b'Sparse' else \
+                  r'$\mathrm{Unconstrained}$' for val in env]
 
         color = [ 'lime'   if val==b'Dense'  else \
                   'orange' if val==b'Sparse' else \
@@ -52,9 +52,9 @@ def phase_space_plot(separation, velocity, size, env,
                    'o' if val==b'Sparse' else \
                    'x' for val in env]
     else:
-        label = [ '$\mathrm{Cluster}$'                if val==b'Cluster'     else \
-                  '$\mathrm{Non}$-$\mathrm{Cluster}$' if val==b'Non-Cluster' else \
-                  '$\mathrm{Unconstrained}$' for val in env]
+        label = [ r'$\mathrm{Cluster}$'                if val==b'Cluster'     else \
+                  r'$\mathrm{Non}$-$\mathrm{Cluster}$' if val==b'Non-Cluster' else \
+                  r'$\mathrm{Unconstrained}$' for val in env]
             
         color = [ 'lime'  if val==b'Cluster'      else \
                   'orange' if val==b'Non-Cluster' else \
@@ -153,14 +153,15 @@ def main(udgs_only=True, local_env=True):
                      '../plots/phasespace_global_candidates.pdf'
 
     # Our Spectroscopic Survey Data
-    data   = np.genfromtxt(fname, dtype=None)
+    data   = np.genfromtxt(fname, dtype=None, encoding='ascii')
     ra, dec, z, env, size = list(zip(*data))
     velocity   = c * np.array(z)
     separation = get_angular_size(ra, dec, coma_ra, coma_dec)/60 # arcmin
 
     # NED Coma Galaxies Data
     fname  = '../data/objsearch_cz2000-12000_500arcmin.txt'
-    coma   = np.genfromtxt(fname, dtype=None, skip_header=24, delimiter='\t')
+    coma   = np.genfromtxt(fname, dtype=None, skip_header=24,
+                           delimiter='\t', encoding='ascii')
     
     # Plot Limits
     kms_min    = 2000  if udgs_only else 0
