@@ -1,101 +1,131 @@
 #!/usr/bin/env python
 
+from collections.abc import Iterable
 import numpy as np
 
 # Constants
 RAD_TO_ARCSEC = 206265  # arcseconds in a radian
 
-################################################################################
-
-def get_physical_size(velocity, angular_size, H0=70):
-    """
-    Computes an object's physical size given its angular size, its recessional
-    veloctiy, and an assumed Hubble's constant.
-        
-    ARGS:
-        (float) angular_size: Object's Angular Size in Arcseconds (")
-        (float) velocity: Recessional Velocity in (km/s) Attributed to the
-        Universe's Expansion Rate
-        (float) H0: Hubble's Constant in (km/s)/Mpc
-        
-    RETURNS:
-        (float) physical_size: Object's Physical Size in kpc
-        """
-    
-    return 1000 * velocity * angular_size / H0 / RAD_TO_ARCSEC
-
 
 ################################################################################
 
-def get_absolute_magnitude(magnitude, velocity, extinction=0, H0=70):
+def get_absolute_magnitude(app_magnitude, velocity, extinction=0, H0=70):
     """
     Computes an object's absolute magnitude given its apparent magnitude,
     its recessional veloctiy, and an assumed Hubble's constant.
     
     ARGS:
-        magnitude (float): Object's Apparent Magnitude
+        app_magnitude (float): Object's Apparent Magnitude
         velocity (float): Recessional Velocity in (km/s) Attributed to the
                           Universe's Expansion Rate
         extinction (float): The amount of extinction due to line-of-sight dust
         H0 (float): Hubble's Constant (km/s / Mpc)
     
     RETURNS:
-        (float): Object's Absolute Magnitude
+        abs_magnitude (float): Object's Absolute Magnitude
     """
     
-    return magnitude - 5 * np.log10(velocity / H0) - 25 - extinction
+    abs_magnitude = app_magnitude - 5 * np.log10(velocity / H0) - 25 - extinction
+
+    return abs_magnitude
 
 
 ################################################################################
 
-def get_separation(ra1, dec1, ra2, dec2, velocity, H0=70):
+def single_coord_conversion(coord, right_ascension):
     """
-    Computes the projected physical separation between two objects given their
-    coordinates and their velocity.
+    Converts 1 RA or Declination coordinate to degrees.
+        
+    ARGS:
+        coord (float/str): Right ascension or declination in fractional
+                           degrees or in HH:MM:SS (RA) / DD:MM:SS (dec).
+        right_ascension (bool): Flag to indicate right ascension (True)
+                                or declination (False).
+
+    RETURNS:
+        degree (float)
+    """
+    try:
+        # Return if coord is already in units of fractional degrees
+        return float(coord)
+    except:
+        if right_ascension:
+            # Converts HH:MM:SS --> degree
+            hour, min, sec = coord.split(':')
+            ra = (int(hour) + int(min)/60. + float(sec)/3600.) /24.* 360.
+            return ra
+        else:
+            # Converts DD:AM:AS --> degree
+            deg, min, sec = coord.split(':')
+            dec = int(deg) + int(min)/60. + float(sec)/3600.
+            return dec
+
+#------------------------------------------------------------------------------#
+
+def coord2degree(coord, right_ascension=True):
+    """
+    Converts a single or an iterable of coords to degrees.
+    ARGS:
+        coord (float/str -or- array of floats/strs)
+    RETURNS:
+        degree (float -or- array of floats)
+    """
+    if not isinstance(coord, Iterable):
+        return single_coord_conversion(coord, right_ascension)
+    
+    return np.array([single_coord_conversion(coo, right_ascension) for coo in coord])
+
+################################################################################
+
+def get_angular_size(ra1, dec1, ra2, dec2):
+    """
+    Computes the projected angular size/separation between two points.
     
     ARGS:
         ra1  (float or string): 1st Object's Right Ascension
         dec1 (float or string): 1st Object's Declination
         ra2  (float or string): 2nd Object's Right Ascension
         dec2 (float or string): 2nd Object's Declination
-        velcity (float): Recessional Velocity (km/s)
-        H0 (float): Hubble's Constant (km/s / Mpc)
         
     RETURNS:
-        (float) The projected physical separation between the two objects in Mpc.
+        angular_size (float): Angular size/separation (arcsec) between 2 points.
     """
-    ############################################################################
     
-    def change_ra(ra):
-        try:
-            return float(ra)
-        except:
-            hour, min, sec = ra.split(':')
-            ra = (int(hour) + int(min)/60. + float(sec)/3600.) /24.* 360.
-            return ra
-
-
-    def change_dec(dec):
-        try:
-            return float(dec)
-        except:
-            deg, min, sec = dec.split(':')
-            dec = int(deg) + int(min)/60. + float(sec)/3600.
-            return dec
-
-    ############################################################################
-
-    ra1 = change_ra(ra1)
-    ra2 = change_ra(ra2)
-    dec1 = change_dec(dec1)
-    dec2 = change_dec(dec2)
+    ra1  = coord2degree(ra1,  right_ascension=True)
+    ra2  = coord2degree(ra2,  right_ascension=True)
+    dec1 = coord2degree(dec1, right_ascension=False)
+    dec2 = coord2degree(dec2, right_ascension=False)
 
     # Computes RA & Dec Offsets (in arcsec)
     ra_offset  = 3600 * (ra2-ra1) * np.cos((dec1+dec2)/2 * np.pi/180.)
     dec_offset = 3600 * (dec2-dec1)
 
     # Computes Angular Separation (in arcsec)
-    angular_separation = np.sqrt( ra_offset**2 + dec_offset**2 )
+    angular_size = np.sqrt( ra_offset**2 + dec_offset**2 )
+
+    return angular_size
+
+
+################################################################################
+
+def get_physical_size(angular_size, velocity, H0=70):
+    """
+    Computes the projected physical size/separation for a given angular size or
+    separation in the local universe (which obeys Hubble's Law: v = cz = H0*d).
+    
+    ARGS:
+        angular_size (float): Angular size/separation (arcsec) between 2 points.
+        velcity (float): Recessional Velocity (km/s) due to expansion
+        H0 (float): Hubble's Constant [(km/s) / Mpc]
+        
+    RETURNS:
+        physical_size (float): Projected physical size/separation (Mpc)
+                               between two points.
+    """
 
     # Computes Physical Separation (in Mpc)
-    return round(angular_separation * velocity / RAD_TO_ARCSEC / H0, 3)
+    physical_size = round(angular_size * velocity / RAD_TO_ARCSEC / H0, 3)
+    
+    return physical_size
+
+################################################################################
