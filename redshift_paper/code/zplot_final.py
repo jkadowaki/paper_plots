@@ -34,7 +34,7 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
     #r = np.genfromtxt('coma_sdss.dat', dtype=None, skip_header=26,
     #                  names='RA,Dec,z',
     #                  usecols=(3, 4, 7))
-    r = np.genfromtxt('coma_vicinity.dat', dtype=None, skip_header=2,
+    r = np.genfromtxt('../data/coma_vicinity.dat', dtype=None, skip_header=2,
                       names='ra,dec,z,r,g,x0,y0',
                       usecols=(0, 1, 2, 3, 4, 5, 5))
 
@@ -69,9 +69,9 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
         color  = {b'Dense':'lime',             b'Sparse':'orange'}             # Default: Use 'g'
         marker = {b'Dense':'^',                b'Sparse':'o'}                  # Default: Use 'x'
     else:
-        label  = {b'Member':'$\mathrm{Cluster}$', b'Non-Member':'$\mathrm{Non}$-$\mathrm{Cluster}$'}  # Default: '$\mathrm{Unconstrained}$'
-        color  = {b'Member':'lime',               b'Non-Member':'orange'}                             # Default: Use 'g'
-        marker = {b'Member':'^',                  b'Non-Member':'o'}                                  # Default: Use 'x'
+        label  = {b'Cluster':'$\mathrm{Cluster}$',   b'Non-Cluster':'$\mathrm{Non}$-$\mathrm{Cluster}$'}  # Default: '$\mathrm{Unconstrained}$'
+        color  = {b'Cluster':'lime',               b'Non-Cluster':'orange'}                             # Default: Use 'g'
+        marker = {b'Cluster':'^',                  b'Non-Cluster':'o'}                                  # Default: Use 'x'
 
 
     for idx in range(q.size):
@@ -128,13 +128,17 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
 
 def main():
     
-    zplot('redshifts2_local_candidates.dat',  'zplot_local_candidates.pdf',
+    zplot('../data/redshifts2_local_candidates.dat',
+          '../plots/zplot_local_candidates.pdf',
           udgs_only=False, local_env=True)
-    zplot('redshifts2_global_candidates.dat', 'zplot_global_candidates.pdf',
+    zplot('../data/redshifts2_global_candidates.dat',
+          '../plots/zplot_global_candidates.pdf',
           udgs_only=False, local_env=False)
-    zplot('redshifts2_local_udgs.dat',        'zplot_local_udgs.pdf',
+    zplot('../data/redshifts2_local_udgs.dat',
+          '../plots/zplot_local_udgs.pdf',
           udgs_only=True,  local_env=True)
-    zplot('redshifts2_global_udgs.dat',       'zplot_global_udgs.pdf',
+    zplot('../data/redshifts2_global_udgs.dat',
+          '../plots/zplot_global_udgs.pdf',
           udgs_only=True,  local_env=False)
 
 ###############################################################################

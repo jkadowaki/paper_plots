@@ -15,6 +15,7 @@ import os
 import pandas as pd
 from scipy import stats
 import seaborn as sns
+import ipdb
 
 # GLOBAL VARIABLES
 hist_color = 'Green'
@@ -32,22 +33,7 @@ PAIR_PLOT.py
 """
 ################################################################################
 
-def convert(str):
-    """
-    
-    ARGS:
-    RETURNS:
-    """
-    try:
-        return int(str)
-    except:
-        return float(str)
-    finally:
-        return str
-
-################################################################################
-
-def read_data(file, udgs_only=True):
+def read_data(file, udg_only=True, field=None):
     """
     Loads relevant data from file into a Pandas DataFrame.
     
@@ -68,45 +54,31 @@ def read_data(file, udgs_only=True):
                 dict_list.append( {key:val for key,val
                                     in zip(columns, line.split())} )
 
+    # Converts NaNs to -1 for integer data-types
+    int_features = ['NUM500', 'NUM1000', 'cz']
+    for obj in dict_list:
+        for feat in int_features:
+            if obj.get(feat)=='NaN':
+                obj[feat] = -1
+
     # Creates DataFrame from list of dictionaries.
     # Specifies the data type for each columns.
     df = pd.DataFrame.from_dict(dict_list).astype(
             {'NAME':str,     'udg':str,   'ra':float,  'dec':float,  'redshift':float,
              'Reff':float,   'b/a':float, 'cz':int,    'n':float,    'NUM500':int,
              'NUV':float,    'g':float,   'r':float,   'z':float,
-             'NUV-g':float,  'g-r':float, 'r-z':float, 'MUg0':float,
-             'LocalEnv':str, 'GlobalEnv':str} )
+             'NUV-g':float,  'g-r':float, 'r-z':float, 'MUg0':float, 'sepMpc':float,
+             'FIELD':str,    'LocalEnv':str,   'GlobalEnv':str} )
+
+    # Filters out objects not in specified field
+    if field:
+        df = df.loc[df['FIELD']==field]
 
     # Return DataFrame with UDGs only if requested.
     if udg_only:
-        return df[df.loc[df['udg']=='TRUE']]
+        return df.loc[df['udg']=='TRUE']
 
     return df
-
-
-################################################################################
-
-def convert_name_to_coord(name):
-    #
-    n=2 # split string after n characters
-    positive = True
-    #
-    try:
-        ra, dec = name.strip('SMDG').split('+')
-    except:
-        ra, dec  = name.strip('SMDG').split('-')
-        positive = False
-    #
-    ra_hour, ra_min, ra_sec, ra_p = [int(ra[i:i+n]) for i in range(0, len(ra), n)]
-    dec_dec, dec_min, dec_sec = [int(dec[i:i+n]) for i in range(0, len(dec), n)]
-    #
-    new_ra = (int(ra_hour)/24. + int(ra_min)/24./60. + float(ra_sec + ra_p)/24./3600.) * 360.
-    new_dec = int(dec_dec) + int(dec_min)/60. + float(dec_sec)/3600.
-    #
-    if positive:
-        return np.round(new_ra, 6), np.round(new_dec, 6)
-    #
-    return np.round(new_ra, 6), -np.round(new_dec, 6)
 
 ################################################################################
 
@@ -139,8 +111,8 @@ def color_plots(df, xfeat, yfeat, environment_scale, local_env,
         df_sparse    = df.loc[df[environment_scale] == "Sparse"]
         df_dense     = df.loc[df[environment_scale] == "Dense"]
     else:
-        df_sparse    = df.loc[df[environment_scale] == "Non-Member"]
-        df_dense     = df.loc[df[environment_scale] == "Member"]
+        df_sparse    = df.loc[df[environment_scale] == "Non-Cluster"]
+        df_dense     = df.loc[df[environment_scale] == "Cluster"]
 
     #Remove NaNs
     df_sparse = df_sparse[[xfeat, yfeat, ms_feat]].dropna()
@@ -173,10 +145,10 @@ def color_plots(df, xfeat, yfeat, environment_scale, local_env,
 
 ################################################################################
 
-def main(data_directory='.',
-         plot_directory='.',
+def main(data_file='kadowaki2019.tsv',
+         data_directory='../data',
+         plot_directory='../plots',
          pair_name='pair.pdf',
-         cumsum_name='cumsum_all.pdf',
          color_name='color_color.pdf',
          update_dat_file=False,
          plot_pair=False,
@@ -196,11 +168,9 @@ def main(data_directory='.',
 
     ############################################################################
 
-    # Load Appropriate Parameter File
-    udg_param_file = os.path.join(data_directory,
-                     'UDG2019_all_parameters.tsv' if udg_only else
-                     'candidates2019_all_parameters.tsv')
-
+    # Data File
+    param_file = os.path.join(data_directory, data_file)
+    
     # Save to Appropriate Coordinate File
     if udg_only:
         if local_env: coords='redshifts2_local_udgs.dat'
@@ -212,8 +182,7 @@ def main(data_directory='.',
 
     # Save to Plots
     pair_plot      = os.path.join(plot_directory, pair_name)
-    ks_plot        = os.path.join(plot_directory, cumsum_name)
-
+    
     three_colors = not udg_only and local_env
 
     global hist_color
@@ -225,8 +194,8 @@ def main(data_directory='.',
 
     ############################################################################
 
-    df_results        = read_data(udg_param_file)
-    environment_scale = 'Environment' if local_env else 'Member'
+    df_results        = read_data(param_file, udg_only=udg_only, field='Coma')
+    environment_scale = 'LocalEnv' if local_env else 'GlobalEnv'
     df_results        = df_results.sort_values(by=[environment_scale])
     df_results        = df_results.reset_index(drop=True)
 
@@ -236,20 +205,20 @@ def main(data_directory='.',
     
         f = os.path.splitext(color_name)
         color_plots(df_results,
-                    xfeat="NUVg",
-                    yfeat="gr",
+                    xfeat="NUV-g",
+                    yfeat="g-r",
                     ms_feat="Reff", ms=20,
                     local_env=local_env,
                     environment_scale=environment_scale,
-                    plot_fname="".join(f[0]+"_Reff"+f[1]))
+                    plot_fname=os.path.join(plot_directory, "".join(f[0]+"_Reff"+f[1])))
                 
         color_plots(df_results,
-                    xfeat="NUVg",
-                    yfeat="gr",
+                    xfeat="NUV-g",
+                    yfeat="g-r",
                     ms_feat="b/a", ms=50,
                     local_env=local_env,
                     environment_scale=environment_scale,
-                    plot_fname="".join(f[0]+"_ba"+f[1]))
+                    plot_fname=os.path.join(plot_directory, "".join(f[0]+"_ba"+f[1])))
                     
                     
     ############################################################################
@@ -349,7 +318,7 @@ def main(data_directory='.',
     
         sns.set(style="ticks", color_codes=True)
         features = ["NUV",
-                    #"g",
+                    "g",
                     #"r",
                     #"NUVg",
                     #"gr",
@@ -399,7 +368,7 @@ def main(data_directory='.',
         if local_env:
             env_replacements = {'Dense':r"$\mathrm{Dense}$",   'Sparse':r"$\mathrm{Sparse}$"}
         else:
-            env_replacements = {'Member':r"$\mathrm{Cluster}$", 'Non-Member':r"$\mathrm{Non}$-$\mathrm{Cluster}$"}
+            env_replacements = {'Cluster':r"$\mathrm{Cluster}$", 'Non-Cluster':r"$\mathrm{Non}$-$\mathrm{Cluster}$"}
         if not udg_only:
             env_replacements["Unconstrained"] = r"$\mathrm{Unconstrained}$"
 
@@ -418,17 +387,27 @@ def main(data_directory='.',
 
 
         # AXIS LABELS
-        replacements = {"NUV":r'$M_\mathrm{NUV}$',
-                        "g":r'$g$',
-                        "r":r'$r$',
-                        "NUVg":r'$\mathrm{NUV} - g$',
-                        "gr":r'$g - r$',
-                        "cz":r'$cz \, \left( \mathrm{km/s} \right)$',
-                        "Reff":r'$R_\mathrm{eff} \, \left( \mathrm{kpc} \right)$',
-                        "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
-                        "b/a":r'$b/a$',
-                        "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$'}
-        #"Environment":r'$\mathrm{Environment}$'}
+        replacements = { # Magnitudes
+                         "NUV":r'$M_\mathrm{NUV}$',
+                         "g":r'$g$',
+                         "r":r'$r$',
+                         "z":r'$z$',
+
+                         # Colors
+                         "NUV-g":r'$\mathrm{NUV} - g$',
+                         "g-r":r'$g - r$',
+                         "r-z":r'$r - z$',
+
+                         # Intrinsic Properties
+                         "n":r'$n$',
+                         "Reff":r'$R_\mathrm{eff} \, \left( \mathrm{kpc} \right)$',
+                         "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
+                         "b/a":r'$b/a$',
+
+                         # Extrinsic Properties
+                         "cz":r'$cz \, \left( \mathrm{km/s} \right)$',
+                         "sepMpc":r'$r_\mathrm{proj}$ \, \left( \mathrm{Mpc} \right)',
+                         "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$' }
 
         for x_idx in range(len(features)-1):
             for y_idx in range(len(features)-1):
@@ -453,7 +432,7 @@ def main(data_directory='.',
     if update_dat_file:
         
         with open(coords_file, 'w') as f:
-            f.write(df_results[['ra', 'dec', 'z', environment_scale, 'Reff']].to_string(index=False, header=False))
+            f.write(df_results[['ra', 'dec', 'redshift', environment_scale, 'Reff']].to_string(index=False, header=False))
 
 
     ############################################################################
@@ -464,27 +443,25 @@ def main(data_directory='.',
             df_sparse    = df_results.loc[df_results[environment_scale] == "Sparse"]
             df_dense     = df_results.loc[df_results[environment_scale] == "Dense"]
         else:
-            df_sparse    = df_results.loc[df_results[environment_scale] == "Non-Member"]
-            df_dense     = df_results.loc[df_results[environment_scale] == "Member"]
-        feature_list = ["NUV",
-                        "g",
-                        "r",
-                        "NUVg",
-                        "gr",
-                        "cz",
-                        "Reff", "MUg0", "b/a",
-                        "NUM500"]
+            df_sparse    = df_results.loc[df_results[environment_scale] == "Non-Cluster"]
+            df_dense     = df_results.loc[df_results[environment_scale] == "Cluster"]
 
-        box_len = 3
-        num_row = 2
-        num_col = int(np.ceil( len(feature_list)/num_row))
+        feature_list = [ # Magnitudes
+                           "NUV", "g", "r", "z",
+                         # Colors
+                           "NUV-g", "g-r", "r-z",
+                         # Intrinsic Properties
+                           "n", "Reff", "MUg0", "b/a",
+                         # Extrinsic Properties
+                           "cz", "sepMpc", "NUM500" ]
 
-
-        #fig, axes = plt.subplots(num_row, num_col, figsize=(num_row * box_len, num_col * box_len)) #, subplot_kw=dict(polar=True))
-        #   #g = sns.FacetGrid(df_results, col=feature_list, height=4)
 
         for idx, feature in enumerate(feature_list):
-
+            """
+            if feature=='sepMpc':
+                print([type(obj) for obj in df_sparse[feature].dropna()])
+                print([type(obj) for obj in df_dense[feature].dropna()])
+            """
             t_stat, t_pval = stats.ttest_ind(df_sparse[feature].dropna(),
                                              df_dense[feature].dropna(),
                                              equal_var=False)
@@ -506,29 +483,42 @@ if __name__ == '__main__':
     
     print("\n----------------- ALL CANDIDATES -----------------")
     print("\n~~~~~LOCAL~~~~~~")
-    main(plot_pair=False, plot_statistical_tests=True,
-         pair_name='pair_all_local.pdf', cumsum_name='cumsum_all_local.pdf',
+    main(plot_pair=True,
+         plot_statistical_tests=True,
+         pair_name='pair_all_local.pdf',
          color_name='color_all_local.pdf',
-         udg_only=False, local_env=True, update_dat_file=True, verbose=False)
+         udg_only=False,
+         local_env=True,
+         update_dat_file=True,
+         verbose=False)
     
     print("\n~~~~~~GLOBAL~~~~~~")
-    main(plot_pair=False, plot_statistical_tests=True,
-         pair_name='pair_all_global.pdf', cumsum_name='cumsum_all_global.pdf',
+    main(plot_pair=True,
+         plot_statistical_tests=True,
+         pair_name='pair_all_global.pdf',
          color_name='color_all_global.pdf',
-         udg_only=False, local_env=False, update_dat_file=True,
+         udg_only=False,
+         local_env=False,
+         update_dat_file=True,
          hack_color_fix=True)
     
     print("\n-------------------- ALL UDGS --------------------")
     print("\n~~~~~~LOCAL~~~~~~")
-    main(plot_pair=False, plot_statistical_tests=True,
-         pair_name='pair_udgs_local.pdf', cumsum_name='cumsum_udgs_local.pdf',
+    main(plot_pair=True,
+         plot_statistical_tests=True,
+         pair_name='pair_udgs_local.pdf',
          color_name='color_udgs_local.pdf',
-         udg_only=True, local_env=True, update_dat_file=True,
+         udg_only=True,
+         local_env=True,
+         update_dat_file=True,
          hack_color_fix=False)
          
     print("\n~~~~~~GLOBAL~~~~~~")
-    main(plot_pair=False, plot_statistical_tests=True,
-         pair_name='pair_udgs_global.pdf', cumsum_name='cumsum_udgs_global.pdf',
+    main(plot_pair=True,
+         plot_statistical_tests=True,
+         pair_name='pair_udgs_global.pdf',
          color_name='color_udgs_global.pdf',
-         udg_only=True, local_env=False, update_dat_file=True,
+         udg_only=True,
+         local_env=False,
+         update_dat_file=True,
          hack_color_fix=True)

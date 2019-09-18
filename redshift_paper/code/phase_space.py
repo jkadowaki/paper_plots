@@ -82,16 +82,16 @@ def phase_space_plot(data, coma, plot_fname, local_env=True,
                   else 'o' if val==b'Sparse'
                   else 'x' for val in env]
     else:
-        label = [     '$\mathrm{Cluster}$'                if val==b'Member'
-                 else '$\mathrm{Non}$-$\mathrm{Cluster}$' if val==b'Non-Member'
+        label = [     '$\mathrm{Cluster}$'                if val==b'Cluster'
+                 else '$\mathrm{Non}$-$\mathrm{Cluster}$' if val==b'Non-Cluster'
                  else '$\mathrm{Unconstrained}$' for val in env]
             
-        color = [     'lime'  if val==b'Member'
-                 else 'orange' if val==b'Non-Member'
+        color = [     'lime'  if val==b'Cluster'
+                 else 'orange' if val==b'Non-Cluster'
                  else 'blue'   for val in env]
 
-        marker = [     '^' if val==b'Member'
-                  else 'o' if val==b'Non-Member'
+        marker = [     '^' if val==b'Cluster'
+                  else 'o' if val==b'Non-Cluster'
                   else 'x' for val in env]
     
     marker_size = 40  # Size of Marker for R_e = 1.0 kpc
@@ -149,17 +149,17 @@ def main(udgs_only=True, local_env=True):
     
     # Appropriate File Names
     if local_env:
-        fname = 'redshifts2_local_udgs.dat' if udgs_only else 'redshifts2_local_candidates.dat'
-        plot_fname = 'phasespace_local_udgs.pdf' if udgs_only else 'phasespace_local_candidates.pdf'
+        fname = '../data/redshifts2_local_udgs.dat' if udgs_only else '../data/redshifts2_local_candidates.dat'
+        plot_fname = '../plots/phasespace_local_udgs.pdf' if udgs_only else '../plots/phasespace_local_candidates.pdf'
     else:
-        fname = 'redshifts2_global_udgs.dat' if udgs_only else 'redshifts2_global_candidates.dat'
-        plot_fname = 'phasespace_global_udgs.pdf' if udgs_only else 'phasespace_global_candidates.pdf'
+        fname = '../data/redshifts2_global_udgs.dat' if udgs_only else '../data/redshifts2_global_candidates.dat'
+        plot_fname = '../plots/phasespace_global_udgs.pdf' if udgs_only else '../plots/phasespace_global_candidates.pdf'
 
     # Spectroscopic Survey Data
     data   = np.genfromtxt(fname, dtype=None)
     
     # NED Coma Galaxies Data
-    fname  = 'objsearch_cz2000-12000_500arcmin.txt'
+    fname  = '../data/objsearch_cz2000-12000_500arcmin.txt'
     coma   = np.genfromtxt(fname, dtype=None, skip_header=24, delimiter='\t')
     
     # Plot Limits
