@@ -66,13 +66,15 @@ def phase_space_plot(data, coma, plot_fname, local_env=True,
     ra_offset  = (np.array(ra)-coma_ra) * np.cos((np.array(dec)+coma_dec)/2 * np.pi/180.)
     dec_offset = np.array(dec)-coma_dec
     separate   = np.sqrt( (ra_offset*60)**2 + (dec_offset*60)**2 )
+    for idx, r in enumerate(ra):
+        print("\t", ra[idx], dec[idx], z[idx], separate[idx])
 
     if local_env:
         label = [     '$\mathrm{Dense}$'  if val==b'Dense'
                  else '$\mathrm{Sparse}$' if val==b'Sparse'
                  else '$\mathrm{Unconstrained}$' for val in env]
 
-        color = [     'green' if val==b'Dense'
+        color = [     'lime'   if val==b'Dense'
                  else 'orange' if val==b'Sparse'
                  else 'blue' for val in env]
 
@@ -80,11 +82,11 @@ def phase_space_plot(data, coma, plot_fname, local_env=True,
                   else 'o' if val==b'Sparse'
                   else 'x' for val in env]
     else:
-        label = [     '$\mathrm{Member}$'                if val==b'Member'
-                 else '$\mathrm{Non}$-$\mathrm{Member}$' if val==b'Non-Member'
+        label = [     '$\mathrm{Cluster}$'                if val==b'Member'
+                 else '$\mathrm{Non}$-$\mathrm{Cluster}$' if val==b'Non-Member'
                  else '$\mathrm{Unconstrained}$' for val in env]
             
-        color = [     'green'  if val==b'Member'
+        color = [     'lime'  if val==b'Member'
                  else 'orange' if val==b'Non-Member'
                  else 'blue'   for val in env]
 
@@ -108,10 +110,10 @@ def phase_space_plot(data, coma, plot_fname, local_env=True,
     ax1.set_xlim(mpc_limit)
     ax1.set_xlabel("$\mathrm{Projected \, Distance} \, (\mathrm{Mpc})$", size=20)
     ax1.set_ylabel("$cz \, (\mathrm{km \, sec^{-1}})$", size=24)
-    ax1.plot((r200,r200), kms_limit, 'y--', linewidth=3)   # Virial Radius
+    ax1.plot((r200,r200), kms_limit, 'r--', linewidth=3)   # Virial Radius
 
     ax2 = ax1.twiny()
-    ax2.plot(arcmin_limit, (c*z_coma, c*z_coma), 'g', linewidth=2)   # Coma Cluster
+    ax2.plot(arcmin_limit, (c*z_coma, c*z_coma), 'b', linewidth=2)   # Coma Cluster
     ax2.scatter(coma_dist, coma_vel, s=1, marker='.')                          # Coma Galaxies
 
     # UDGs
@@ -120,8 +122,8 @@ def phase_space_plot(data, coma, plot_fname, local_env=True,
                     c=color[idx], label=label[idx], marker=marker[idx],
                     s=60*size[idx] if adjust_marker else 60,
                     alpha=1,
-                    linewidths=1.0 if size[idx] > large_thres else 0.25,
-                    edgecolors='k' if size[idx] > large_thres else 'w')
+                    linewidths=2 if size[idx] > large_thres else 0.2,
+                    edgecolors='k')
 
     ax2.set_xlim(arcmin_limit) #arcmin
     ax2.set_ylim(kms_limit) #km/s

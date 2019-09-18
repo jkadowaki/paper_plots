@@ -39,8 +39,8 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
                       usecols=(0, 1, 2, 3, 4, 5, 5))
 
     q = np.genfromtxt(redshift_file, dtype=None, skip_header=0,
-                      names='ra,dec,z,env,x0,y0',
-                      usecols=(0, 1, 2, 3, 2, 2))
+                      names='ra,dec,z,env,re,x0,y0',
+                      usecols=(0, 1, 2, 3, 4, 2, 2))
 
 
     # Calculate the comoving distance corresponding to each object's redshift
@@ -66,12 +66,12 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
 
     if local_env:
         label  = {b'Dense':'$\mathrm{Dense}$', b'Sparse':'$\mathrm{Sparse}$'}  # Default: '$\mathrm{Unconstrained}$'
-        color  = {b'Dense':'g', b'Sparse':'orange'}  # Default: Use 'g'
-        marker = {b'Dense':'^', b'Sparse':'o'}  # Default: Use 'x'
+        color  = {b'Dense':'lime',             b'Sparse':'orange'}             # Default: Use 'g'
+        marker = {b'Dense':'^',                b'Sparse':'o'}                  # Default: Use 'x'
     else:
-        label  = {b'Member':'$\mathrm{Member}$', b'Non-Member':'$\mathrm{Non}$-$\mathrm{Member}$'}  # Default: '$\mathrm{Unconstrained}$'
-        color  = {b'Member':'g',                 b'Non-Member':'orange'}  # Default: Use 'g'
-        marker = {b'Member':'^',                 b'Non-Member':'o'}  # Default: Use 'x'
+        label  = {b'Member':'$\mathrm{Cluster}$', b'Non-Member':'$\mathrm{Non}$-$\mathrm{Cluster}$'}  # Default: '$\mathrm{Unconstrained}$'
+        color  = {b'Member':'lime',               b'Non-Member':'orange'}                             # Default: Use 'g'
+        marker = {b'Member':'^',                  b'Non-Member':'o'}                                  # Default: Use 'x'
 
 
     for idx in range(q.size):
@@ -90,15 +90,19 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
     fig.subplots_adjust(bottom=0.2, top=0.9, left=0.35, right=0.7, wspace=None, hspace = None)
 
     # Plot the galaxies, colouring points by z.
-    col = plt.scatter(r['x0'], r['y0'], marker='.', s=sizes, c='darkslategrey', linewidths=0.3,alpha=0.2)
+    col = plt.scatter(r['x0'], r['y0'], marker='.', s=sizes, c='lightsteelblue', linewidths=0.3,alpha=0.4)
 
-    sizesq = 20
+    sizesq = 20       # Size of Marker for R_e = 1.0 kpc
+    large_thres = 3.5 # kpc
     for idx in range(q.size):
         col = plt.scatter(q['x0'][idx], q['y0'][idx],
                           label  = label.get( q['env'][idx], '$\mathrm{Unconstrained}$'),
                           color  = color.get( q['env'][idx], 'b'),
                           marker = marker.get(q['env'][idx], 'x'),
-                          s=sizesq, linewidths=0.3, alpha=1, edgecolors='k')
+                          s      = sizesq * q['re'][idx],
+                          linewidth = 1.5 if q['re'][idx]>large_thres else 0.2,
+                          alpha=1,
+                          edgecolors='k')
 
 
     plt.xlabel('$\mathrm{X \, (Mpc)}$',        fontsize=fontsize)
@@ -111,8 +115,12 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
 
     handles, labels = ax.get_legend_handles_labels()
     unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
-    ax.legend(*zip(*unique), loc='lower right', title_fontsize=12,
-              title=r'$\mathrm{Local \, Environment}$' if local_env else r'$\mathrm{Coma \, Membership}$')
+    legend = ax.legend(*zip(*unique), fancybox=True, prop={'size': 10},
+                       loc='lower right',  frameon=True, title_fontsize=12,
+                       title=r'$\mathrm{Local \, Environment}$' if local_env else r'$\mathrm{Coma \, Membership}$')
+
+    for legend_handle in legend.legendHandles:
+        legend_handle._sizes = [sizesq * 1.5]  # Marker Size in Legend is Threshold UDG Size
 
     plt.savefig(zplot_file, bbox_inches='tight')
 
