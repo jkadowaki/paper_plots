@@ -71,38 +71,37 @@ def phase_space_plot(data_fname,
     
     """
     
+    coma_vel, coma_dist = load_NED_data(ned_fname)
+    separation, velocity, size, env = load_OUR_data(data_fname)
+
     # Select Legend Labels, Marker Sizes & Colors & Shapes
     marker_size = 40  # Size of Marker for R_e = 1.0 kpc
     large_thres = 3.5 # kpc
     
     if local_env:
-        label = [ r'$\mathrm{Dense}$'  if val==b'Dense'  else \
-                  r'$\mathrm{Sparse}$' if val==b'Sparse' else \
+        label = [ r'$\mathrm{Dense}$'  if val=='Dense'  else \
+                  r'$\mathrm{Sparse}$' if val=='Sparse' else \
                   r'$\mathrm{Unconstrained}$' for val in env]
 
-        color = [ 'lime'   if val==b'Dense'  else \
-                  'orange' if val==b'Sparse' else \
+        color = [ 'lime'   if val=='Dense'  else \
+                  'orange' if val=='Sparse' else \
                   'blue' for val in env]
 
-        marker = [ '^' if val==b'Dense'  else \
-                   'o' if val==b'Sparse' else \
+        marker = [ '^' if val=='Dense'  else \
+                   'o' if val=='Sparse' else \
                    'x' for val in env]
     else:
-        label = [ r'$\mathrm{Cluster}$'                if val==b'Cluster'     else \
-                  r'$\mathrm{Non}$-$\mathrm{Cluster}$' if val==b'Non-Cluster' else \
+        label = [ r'$\mathrm{Cluster}$'                if val=='Cluster'     else \
+                  r'$\mathrm{Non}$-$\mathrm{Cluster}$' if val=='Non-Cluster' else \
                   r'$\mathrm{Unconstrained}$' for val in env]
-            
-        color = [ 'lime'  if val==b'Cluster'      else \
-                  'orange' if val==b'Non-Cluster' else \
+          
+        color = [ 'lime'   if val=='Cluster'      else \
+                  'orange' if val=='Non-Cluster' else \
                   'blue'   for val in env]
 
-        marker = [ '^' if val==b'Cluster'     else \
-                   'o' if val==b'Non-Cluster' else \
+        marker = [ '^' if val=='Cluster'     else \
+                   'o' if val=='Non-Cluster' else \
                    'x' for val in env]
-    
-
-    coma_vel, coma_dist = load_NED_data(ned_fname)
-    separation, velocity, size, env = load_OUR_data(data_fname)
     
     # Create Figure
     plt.clf()
