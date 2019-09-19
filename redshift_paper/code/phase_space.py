@@ -19,8 +19,44 @@ r_splash = 2.428     # Mpc
 
 ###############################################################################
 
-def phase_space_plot(separation, velocity, size, env,
-                     coma, plot_fname, local_env=True,
+def load_NED_data(fname):
+    """
+    """
+    
+    # NED SEARCH RESULTS:
+    # 0  No.               6  Redshift                12  Photometry Points
+    # 1  Object Name       7  Redshift Flag           13  Positions
+    # 2  RA(deg)           8  Magnitude and Filter    14  Redshift Points
+    # 3  DEC(deg)          9  Distance (arcmin)       15  Diameter Points
+    # 4  Type             10  References              16  Associations
+    # 5  Velocity         11  Notes
+    
+    results = np.genfromtxt(fname, skip_header=24, delimiter='\t',
+                            dtype=None, encoding='ascii')
+    
+    velocity = [coma_galaxy[5] for coma_galaxy in results]
+    distance = [coma_galaxy[9] for coma_galaxy in results]
+
+    return velocity, distance
+
+
+###############################################################################
+
+def load_OUR_data(fname):
+    """
+    """
+    # Our Spectroscopic Survey Data
+    data   = np.genfromtxt(fname, dtype=None, encoding='ascii')
+    ra, dec, z, env, size = list(zip(*data))
+    velocity   = c * np.array(z)
+    separation = get_angular_size(ra, dec, coma_ra, coma_dec)/60 # arcmin
+    
+    return separation, velocity, size, env
+
+###############################################################################
+
+def phase_space_plot(data_fname,
+                     ned_fname, plot_fname, local_env=True,
                      kms_limit=[200,12050],
                      arcmin_limit=[0,505],
                      mpc_limit=[0,14.76],
@@ -65,29 +101,8 @@ def phase_space_plot(separation, velocity, size, env,
                    'x' for val in env]
     
 
-    # NED GALAXIES
-    """
-    NED SEARCH RESULTS:
-        0     No.
-        1     Object Name
-        2     RA(deg)
-        3     DEC(deg)
-        4     Type
-        5     Velocity
-        6     Redshift
-        7     Redshift Flag
-        8     Magnitude and Filter
-        9     Distance (arcmin)
-        10    References
-        11    Notes
-        12    Photometry Points
-        13    Positions
-        14    Redshift Points
-        15    Diameter Points
-        16    Associations
-    """
-    coma_vel  = [coma_galaxy[5] for coma_galaxy in coma]
-    coma_dist = [coma_galaxy[9] for coma_galaxy in coma]
+    coma_vel, coma_dist = load_NED_data(ned_fname)
+    separation, velocity, size, env = load_OUR_data(data_fname)
     
     # Create Figure
     plt.clf()
@@ -142,26 +157,18 @@ def main(udgs_only=True, local_env=True):
     
     # Appropriate File Names
     if local_env:
-        fname      = '../data/redshifts2_local_udgs.dat'   if udgs_only else \
+        data_fname = '../data/redshifts2_local_udgs.dat'   if udgs_only else \
                      '../data/redshifts2_local_candidates.dat'
         plot_fname = '../plots/phasespace_local_udgs.pdf'  if udgs_only else \
                      '../plots/phasespace_local_candidates.pdf'
     else:
-        fname      = '../data/redshifts2_global_udgs.dat'  if udgs_only else \
+        data_fname = '../data/redshifts2_global_udgs.dat'  if udgs_only else \
                      '../data/redshifts2_global_candidates.dat'
         plot_fname = '../plots/phasespace_global_udgs.pdf' if udgs_only else \
                      '../plots/phasespace_global_candidates.pdf'
 
-    # Our Spectroscopic Survey Data
-    data   = np.genfromtxt(fname, dtype=None, encoding='ascii')
-    ra, dec, z, env, size = list(zip(*data))
-    velocity   = c * np.array(z)
-    separation = get_angular_size(ra, dec, coma_ra, coma_dec)/60 # arcmin
-
     # NED Coma Galaxies Data
-    fname  = '../data/objsearch_cz2000-12000_500arcmin.txt'
-    coma   = np.genfromtxt(fname, dtype=None, skip_header=24,
-                           delimiter='\t', encoding='ascii')
+    ned_fname = '../data/objsearch_cz2000-12000_500arcmin.txt'
     
     # Plot Limits
     kms_min    = 2000  if udgs_only else 0
@@ -174,8 +181,7 @@ def main(udgs_only=True, local_env=True):
     # Plot Phase Space Data
     legend_loc = 'lower right' if udgs_only else 'upper right'
 
-    phase_space_plot(separation, velocity, size, env,
-                     coma, plot_fname, local_env=local_env,
+    phase_space_plot(data_fname, ned_fname,  plot_fname, local_env=local_env,
                      kms_limit    = [kms_min,    kms_max],
                      arcmin_limit = [arcmin_min, arcmin_max],
                      mpc_limit    = [mpc_min,    mpc_max],
