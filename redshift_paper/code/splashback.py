@@ -59,9 +59,9 @@ def get_splashback_radius(R200m, M200m, z, r_virial=None, verbose=True):
     splash = RspR200m * R200m
 
     if verbose:
-        print("R200 Radius:      ", np.round(R200m,  NUM_DECIMAL_PLACES))
-        print("Splashback Radius:", np.round(splash, NUM_DECIMAL_PLACES))
-        print("r_splash / r_200: ", np.round(splash/R200m, NUM_DECIMAL_PLACES))
+        print("R200 Radius:      ", np.round(R200m,    NUM_DECIMAL_PLACES))
+        print("Splashback Radius:", np.round(splash,   NUM_DECIMAL_PLACES))
+        print("r_splash / r_200: ", np.round(RspR200m, NUM_DECIMAL_PLACES))
         print("\n")
     
     return np.round(splash, NUM_DECIMAL_PLACES)
