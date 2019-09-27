@@ -1,0 +1,420 @@
+
+----------------- ALL CANDIDATES -----------------
+
+~~~~~LOCAL~~~~~~
+
+Feature: NUV
+T-statistic: -1.2846949999248036
+P-value (2tail): 0.20853655612947633
+KS-statistic: 0.3974358974358974
+P-value (2tail): 0.04985527726697281
+
+Feature: g
+T-statistic: -0.49117680232228156
+P-value (2tail): 0.6264115679828086
+KS-statistic: 0.25862068965517243
+P-value (2tail): 0.34023936996747495
+
+Feature: r
+T-statistic: -0.1765313432628228
+P-value (2tail): 0.8609324653794931
+KS-statistic: 0.22758620689655173
+P-value (2tail): 0.48853438493204926
+
+Feature: z
+T-statistic: -0.011076259840810664
+P-value (2tail): 0.9912275220956468
+KS-statistic: 0.2120689655172414
+P-value (2tail): 0.5720234668618585
+
+Feature: NUV-g
+T-statistic: -0.9692274433995869
+P-value (2tail): 0.3392691895632267
+KS-statistic: 0.18376068376068377
+P-value (2tail): 0.7899974636622611
+
+Feature: NUV-r
+T-statistic: -2.621943081511319
+P-value (2tail): 0.013098816939082651
+KS-statistic: 0.5299145299145299
+P-value (2tail): 0.0027967503936413562
+
+Feature: NUV-z
+T-statistic: -1.2279721534031893
+P-value (2tail): 0.22816713356915777
+KS-statistic: 0.2606837606837607
+P-value (2tail): 0.3824900893496812
+
+Feature: g-r
+T-statistic: -2.2848087001644695
+P-value (2tail): 0.028618472078068814
+KS-statistic: 0.49310344827586206
+P-value (2tail): 0.0036810961752758997
+
+Feature: g-z
+T-statistic: -2.0101263664875826
+P-value (2tail): 0.05200480861903031
+KS-statistic: 0.3931034482758621
+P-value (2tail): 0.03642359075713186
+
+Feature: r-z
+T-statistic: -1.2511103986266905
+P-value (2tail): 0.21759010267317683
+KS-statistic: 0.3896551724137931
+P-value (2tail): 0.03949551975488208
+
+Feature: n
+T-statistic: -2.0036145273711417
+P-value (2tail): 0.05166737435745564
+KS-statistic: 0.3017241379310345
+P-value (2tail): 0.1825671271920678
+
+Feature: Reff
+T-statistic: 0.8876296765858468
+P-value (2tail): 0.37963453182628026
+KS-statistic: 0.27413793103448275
+P-value (2tail): 0.2755593050438563
+
+Feature: MUg0
+T-statistic: 2.0451049050954957
+P-value (2tail): 0.04650765936770655
+KS-statistic: 0.33275862068965517
+P-value (2tail): 0.11060575305177278
+
+Feature: b/a
+T-statistic: 0.3295022881963893
+P-value (2tail): 0.7432414015102432
+KS-statistic: 0.2793103448275862
+P-value (2tail): 0.25277501283799697
+
+Feature: cz
+T-statistic: 0.5728644886487317
+P-value (2tail): 0.5711537275173371
+KS-statistic: 0.29310344827586204
+P-value (2tail): 0.21086746401637524
+
+Feature: sepMpc
+T-statistic: 3.658418675973406
+P-value (2tail): 0.0016055022438616407
+KS-statistic: 0.5741379310344827
+P-value (2tail): 0.0003964753723574299
+
+Feature: NUM500
+T-statistic: -6.216058553327328
+P-value (2tail): 1.0253111169203784e-06
+KS-statistic: 1.0
+P-value (2tail): 7.09432512735475e-14
+
+~~~~~~GLOBAL~~~~~~
+
+Feature: NUV
+T-statistic: 1.6448980367385901
+P-value (2tail): 0.11021456209016345
+KS-statistic: 0.3148148148148148
+P-value (2tail): 0.12675144005239658
+
+Feature: g
+T-statistic: 2.2123296117884084
+P-value (2tail): 0.0346047101762574
+KS-statistic: 0.4666666666666667
+P-value (2tail): 0.002674695819343542
+
+Feature: r
+T-statistic: 2.6875391104311657
+P-value (2tail): 0.011636818978026577
+KS-statistic: 0.4666666666666667
+P-value (2tail): 0.002674695819343542
+
+Feature: z
+T-statistic: 3.052547880448574
+P-value (2tail): 0.004702559258683576
+KS-statistic: 0.4666666666666667
+P-value (2tail): 0.002674695819343542
+
+Feature: NUV-g
+T-statistic: 0.7604949943644669
+P-value (2tail): 0.4516526184280768
+KS-statistic: 0.19444444444444445
+P-value (2tail): 0.6364501893305043
+
+Feature: NUV-r
+T-statistic: -4.492599558229138
+P-value (2tail): 6.122613028970074e-05
+KS-statistic: 0.5601851851851852
+P-value (2tail): 0.0003345385753789065
+
+Feature: NUV-z
+T-statistic: 0.1864634691987416
+P-value (2tail): 0.8530483355787433
+KS-statistic: 0.18518518518518517
+P-value (2tail): 0.6922778958482894
+
+Feature: g-r
+T-statistic: -4.711842073065879
+P-value (2tail): 2.589434662324423e-05
+KS-statistic: 0.5615384615384615
+P-value (2tail): 0.00012904583845718687
+
+Feature: g-z
+T-statistic: -5.095665792234734
+P-value (2tail): 8.0123617698981e-06
+KS-statistic: 0.6230769230769231
+P-value (2tail): 1.2499619206796098e-05
+
+Feature: r-z
+T-statistic: -3.918833352287523
+P-value (2tail): 0.0002928423436732716
+KS-statistic: 0.5512820512820513
+P-value (2tail): 0.000192449984251164
+
+Feature: n
+T-statistic: -1.9935933128466554
+P-value (2tail): 0.05224888864995388
+KS-statistic: 0.47692307692307695
+P-value (2tail): 0.0020310749980342324
+
+Feature: Reff
+T-statistic: -0.26110997232368693
+P-value (2tail): 0.7956020034725169
+KS-statistic: 0.4230769230769231
+P-value (2tail): 0.008776805029043544
+
+Feature: MUg0
+T-statistic: 1.6313020064297956
+P-value (2tail): 0.10874790205918616
+KS-statistic: 0.2743589743589744
+P-value (2tail): 0.19855711637621987
+
+Feature: b/a
+T-statistic: -0.7734652337240097
+P-value (2tail): 0.4426801988969823
+KS-statistic: 0.24615384615384617
+P-value (2tail): 0.3064176915760861
+
+Feature: cz
+T-statistic: -2.912070223363611
+P-value (2tail): 0.007067442897625669
+KS-statistic: 0.5435897435897435
+P-value (2tail): 0.0002379592512441464
+
+Feature: sepMpc
+T-statistic: 3.8091021195447077
+P-value (2tail): 0.0007922604176604863
+KS-statistic: 0.6538461538461539
+P-value (2tail): 3.029279565747167e-06
+
+Feature: NUM500
+T-statistic: -5.212373747378542
+P-value (2tail): 9.704465268121679e-06
+KS-statistic: 0.6076923076923076
+P-value (2tail): 2.4906807784996765e-05
+
+-------------------- ALL UDGS --------------------
+
+~~~~~~LOCAL~~~~~~
+
+Feature: NUV
+T-statistic: -2.0012002098327453
+P-value (2tail): 0.055371288175876346
+KS-statistic: 0.4818181818181818
+P-value (2tail): 0.02156231030680189
+
+Feature: g
+T-statistic: -1.0069242158323173
+P-value (2tail): 0.32157912436221664
+KS-statistic: 0.30637254901960786
+P-value (2tail): 0.2425265938759894
+
+Feature: r
+T-statistic: -0.6298344252653953
+P-value (2tail): 0.5335142469811933
+KS-statistic: 0.28921568627450983
+P-value (2tail): 0.30416936715502685
+
+Feature: z
+T-statistic: -0.4028397360531144
+P-value (2tail): 0.6898363582905634
+KS-statistic: 0.24509803921568626
+P-value (2tail): 0.5021138754973383
+
+Feature: NUV-g
+T-statistic: -1.1931247252195054
+P-value (2tail): 0.2432598697841251
+KS-statistic: 0.2545454545454545
+P-value (2tail): 0.5230063382372785
+
+Feature: NUV-r
+T-statistic: -2.6896196468990072
+P-value (2tail): 0.011952157956460199
+KS-statistic: 0.5515151515151515
+P-value (2tail): 0.004779675481848655
+
+Feature: NUV-z
+T-statistic: -1.4526180556489268
+P-value (2tail): 0.15816861258618714
+KS-statistic: 0.34545454545454546
+P-value (2tail): 0.18882335622024393
+
+Feature: g-r
+T-statistic: -2.2033017599150084
+P-value (2tail): 0.03551819318414627
+KS-statistic: 0.49754901960784315
+P-value (2tail): 0.009055594787309107
+
+Feature: g-z
+T-statistic: -2.0039742255821285
+P-value (2tail): 0.05370577358004502
+KS-statistic: 0.4387254901960784
+P-value (2tail): 0.030298231133990994
+
+Feature: r-z
+T-statistic: -1.2416512746663269
+P-value (2tail): 0.22188676250927294
+KS-statistic: 0.43137254901960786
+P-value (2tail): 0.03389773025408682
+
+Feature: n
+T-statistic: -2.3451056631631517
+P-value (2tail): 0.024954053512442544
+KS-statistic: 0.3480392156862745
+P-value (2tail): 0.13549414971788432
+
+Feature: Reff
+T-statistic: 1.096225659026034
+P-value (2tail): 0.27972514910807855
+KS-statistic: 0.3137254901960784
+P-value (2tail): 0.2236862751868871
+
+Feature: MUg0
+T-statistic: 2.319002585101012
+P-value (2tail): 0.025740502002055254
+KS-statistic: 0.39950980392156865
+P-value (2tail): 0.05875018578790148
+
+Feature: b/a
+T-statistic: -0.10645599884297925
+P-value (2tail): 0.9157737142856378
+KS-statistic: 0.3161764705882353
+P-value (2tail): 0.21152429122568528
+
+Feature: cz
+T-statistic: 0.8752585065098712
+P-value (2tail): 0.3916897784492913
+KS-statistic: 0.3382352941176471
+P-value (2tail): 0.1602833275997153
+
+Feature: sepMpc
+T-statistic: 3.7798734882894043
+P-value (2tail): 0.0015611589032642672
+KS-statistic: 0.6053921568627451
+P-value (2tail): 0.0006008261513953395
+
+Feature: NUM500
+T-statistic: -5.525197638432582
+P-value (2tail): 1.280024876926478e-05
+KS-statistic: 1.0
+P-value (2tail): 1.3194112469250285e-11
+
+~~~~~~GLOBAL~~~~~~
+
+Feature: NUV
+T-statistic: -3.0225579964093314
+P-value (2tail): 0.005214129223831233
+KS-statistic: 0.5128205128205128
+P-value (2tail): 0.015312232620353305
+
+Feature: g
+T-statistic: -1.9792979430349207
+P-value (2tail): 0.05834300169562266
+KS-statistic: 0.5025641025641026
+P-value (2tail): 0.010138753955371671
+
+Feature: r
+T-statistic: -1.2511738782997532
+P-value (2tail): 0.2223693048478806
+KS-statistic: 0.4153846153846154
+P-value (2tail): 0.05463985648760905
+
+Feature: z
+T-statistic: -0.6339792243266996
+P-value (2tail): 0.5316927701098537
+KS-statistic: 0.2923076923076923
+P-value (2tail): 0.31378441868329
+
+Feature: NUV-g
+T-statistic: -1.577080502005031
+P-value (2tail): 0.12784575491799824
+KS-statistic: 0.30448717948717946
+P-value (2tail): 0.32926560111864067
+
+Feature: NUV-r
+T-statistic: -5.079441793876326
+P-value (2tail): 2.3038176185711327e-05
+KS-statistic: 0.6794871794871795
+P-value (2tail): 0.0003085939904633461
+
+Feature: NUV-z
+T-statistic: -2.23777965588935
+P-value (2tail): 0.03452955640671229
+KS-statistic: 0.38782051282051283
+P-value (2tail): 0.1168915989769228
+
+Feature: g-r
+T-statistic: -5.0971286848141535
+P-value (2tail): 1.3756613087194548e-05
+KS-statistic: 0.6641025641025641
+P-value (2tail): 0.00016565544933155874
+
+Feature: g-z
+T-statistic: -5.540039766231965
+P-value (2tail): 4.9548752713941434e-06
+KS-statistic: 0.7512820512820513
+P-value (2tail): 8.985142042283734e-06
+
+Feature: r-z
+T-statistic: -3.7195106638167004
+P-value (2tail): 0.0009226960964527116
+KS-statistic: 0.6743589743589744
+P-value (2tail): 0.0001237093579392612
+
+Feature: n
+T-statistic: -0.5390251254515008
+P-value (2tail): 0.5955776040182277
+KS-statistic: 0.2846153846153846
+P-value (2tail): 0.34066070837643336
+
+Feature: Reff
+T-statistic: 2.167457219581252
+P-value (2tail): 0.04382170478237207
+KS-statistic: 0.4256410256410256
+P-value (2tail): 0.045072788303550215
+
+Feature: MUg0
+T-statistic: 0.6401890195311354
+P-value (2tail): 0.5260815429389893
+KS-statistic: 0.2512820512820513
+P-value (2tail): 0.4976176011147675
+
+Feature: b/a
+T-statistic: -0.7995389658362911
+P-value (2tail): 0.4297140430716452
+KS-statistic: 0.38461538461538464
+P-value (2tail): 0.08867946537031335
+
+Feature: cz
+T-statistic: 0.5745791091852587
+P-value (2tail): 0.5735122422265755
+KS-statistic: 0.26666666666666666
+P-value (2tail): 0.4170449936152014
+
+Feature: sepMpc
+T-statistic: 4.60508548646174
+P-value (2tail): 0.0003990528785316553
+KS-statistic: 1.0
+P-value (2tail): 3.153011185474952e-11
+
+Feature: NUM500
+T-statistic: -4.599675519344992
+P-value (2tail): 9.508300821548328e-05
+KS-statistic: 0.6153846153846154
+P-value (2tail): 0.0006532022392066184

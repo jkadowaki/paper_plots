@@ -5,9 +5,6 @@ import warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
-import csv
-import errno
-import matplotlib
 import matplotlib.pyplot as plt
 plt.rc('text', usetex=True)
 import numpy as np
@@ -15,11 +12,12 @@ import os
 import pandas as pd
 from scipy import stats
 import seaborn as sns
-import ipdb
+
 
 # GLOBAL VARIABLES
 hist_color = 'Green'
 hist_idx   = -1
+
 
 ################################################################################
 """
@@ -64,11 +62,13 @@ def read_data(file, udg_only=True, field=None):
     # Creates DataFrame from list of dictionaries.
     # Specifies the data type for each columns.
     df = pd.DataFrame.from_dict(dict_list).astype(
-            {'NAME':str,     'udg':str,   'ra':float,  'dec':float,  'redshift':float,
-             'Reff':float,   'b/a':float, 'cz':int,    'n':float,    'NUM500':int,
-             'NUV':float,    'g':float,   'r':float,   'z':float,
-             'NUV-g':float,  'g-r':float, 'r-z':float, 'MUg0':float, 'sepMpc':float,
-             'FIELD':str,    'LocalEnv':str,   'GlobalEnv':str} )
+         {   'NAME':str,    'FIELD':str,         'ra':float,    'dec':float,
+           'sepMpc':float,     'cz':int,   'redshift':float, 'NUM500':int,
+             'Reff':float,   'MUg0':float,      'b/a':float,      'n':float,
+              'NUV':float,      'g':float,        'r':float,      'z':float,
+            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,     'UV':str,
+              'g-r':float,    'g-z':float,      'r-z':float,
+              'udg':str, 'LocalEnv':str,  'GlobalEnv':str   } )
 
     # Filters out objects not in specified field
     if field:
@@ -101,47 +101,112 @@ def change_color(three_colors=False):
 
 ################################################################################
 
-def color_plots(df, xfeat, yfeat, environment_scale, local_env,
-                ms_feat="Reff", ms=10,
-                xlabel="$\mathrm{NUV} - g$",
-                ylabel="$g-r$",
-                plot_fname="color_color.pdf"):
+def get_label_color_marker(df, efeat="LocalEnv"):
+
+    # Local Environment
+    if efeat == "LocalEnv":
+        label  = [ r'$\mathrm{Dense}$'         if  val=='Dense'  else \
+                   r'$\mathrm{Sparse}$'        if  val=='Sparse' else \
+                   r'$\mathrm{Unconstrained}$' for val in df[efeat] ]
+        color  = [ 'lime'   if  val=='Dense'  else \
+                   'orange' if  val=='Sparse' else \
+                   'blue'   for val in df[efeat] ]
+        marker = [ '^'      if  val=='Dense'  else \
+                   'o'      if  val=='Sparse' else \
+                   'x'      for val in df[efeat] ]
+        legend_title = r"$\mathrm{Local \, Environment}$"
     
-    if local_env:
-        df_sparse    = df.loc[df[environment_scale] == "Sparse"]
-        df_dense     = df.loc[df[environment_scale] == "Dense"]
+    # Global/Cluster Environment
+    elif efeat == "GlobalEnv":
+        label  = [ r'$\mathrm{Cluster}$'                if val=='Cluster'     else \
+                   r'$\mathrm{Non}$-$\mathrm{Cluster}$' if val=='Non-Cluster' else \
+                   r'$\mathrm{Unconstrained}$'          for val in df[efeat] ]
+        color  = [ 'lime'   if  val=='Cluster'     else \
+                   'orange' if  val=='Non-Cluster' else \
+                   'blue'   for val in df[efeat] ]
+        marker = [ '^'      if  val=='Cluster'     else \
+                   'o'      if  val=='Non-Cluster' else \
+                   'x'      for val in df[efeat] ]
+        legend_title = r"$\mathrm{Coma \, Membership}$"
+                   
     else:
-        df_sparse    = df.loc[df[environment_scale] == "Non-Cluster"]
-        df_dense     = df.loc[df[environment_scale] == "Cluster"]
-
-    #Remove NaNs
-    df_sparse = df_sparse[[xfeat, yfeat, ms_feat]].dropna()
-    df_dense  = df_dense[[xfeat, yfeat, ms_feat]].dropna()
-
-    # PLOT
-    fig = plt.figure()
-
-    print("\n{0}\nNUV-g:\n\t".format("SPARSE" if local_env else "Non-Member"),
-          df_sparse[[xfeat, yfeat, ms_feat]])
+        label  = [None] * len(df)
+        color  = ['b']  * len(df)
+        marker = ['x']  * len(df)
+        legend_title = None
+        
+    return label, color, marker, legend_title
     
-    plt.scatter(df_sparse[[xfeat]], df_sparse[[yfeat]],
-                s=ms*df_sparse[[ms_feat]], color='orange', marker='o',
-                label=r"$\mathrm{Sparse}$" if local_env else r"$\mathrm{Non}$-$\mathrm{Member}$")
+################################################################################
 
-    print("\n{0}\nNUV-g:\n\t".format("DENSE" if local_env else "Member"),
-          df_dense[[xfeat, yfeat, ms_feat]])
+def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Reff", plot_fname='color.pdf'):
+    """
+    Creates color-color or color-magnitude plots.
+    
+    df (DataFrame)
+    xfeat (str): Color or Magnitude Feature
+    yfeat (str): Color or Magnitude Feature
+    efeat (str): Environment Feature (i.e., 'LocalEnv' or 'GlobalEnv')
+    mfeat (str): Feature to base Marker Size
+    plot_fname (str): Filename of Plot
+    """
 
-    plt.scatter(df_dense[[xfeat]], df_dense[[yfeat]],
-                s=ms*df_dense[[ms_feat]], color='lime', marker='^',
-                label=r"$\mathrm{Dense}$" if local_env else r"$\mathrm{Member}$")
+    # Remove NaNs & Sorts Data to Plot Big Markers First
+    df = df[[xfeat, yfeat, mfeat, efeat]].dropna()
+    df = df.sort_values(by=[mfeat], ascending=False)
 
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend(title=r"$\mathrm{Local \, Environment}$" if local_env else r"$\mathrm{Coma \, Membership}$")
+    # Select Legend Labels, Marker Sizes & Colors & Shapes
+    small_thres = 1.5  # kpc
+    large_thres = 3.5  # kpc
+    fontsize    = 30
+    marker_size = 40
+    marker_edge = 'k'
+    thin_line   = 0.2
+    thick_line  = 1.5
+    label, color, marker, legend_title = get_label_color_marker(df, efeat)
+
+    # Scatter Plot
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111)
+    
+    for idx in range(len(df)):
+        plt.scatter( df[xfeat].iloc[idx],
+                     df[yfeat].iloc[idx],
+                     label=label[idx],
+                     # Marker Radius Scales Linearly with `mfeat` Value
+                     s=df[mfeat].iloc[idx]**2 * marker_size,
+                     color=color[idx],
+                     marker=marker[idx],
+                     edgecolors=marker_edge,
+                     # Add Bold Outline around `mfeat` Values above `large_thres`
+                     linewidth=thick_line if df[mfeat].iloc[idx]>large_thres \
+                                          else thin_line )
+
+    plt.tick_params(which='both', direction='in', pad=10, labelsize=fontsize)
+    plt.xlabel('$'+ xfeat.replace('NUV','\mathrm{NUV}') +'$', fontsize=fontsize)
+    plt.ylabel('$'+ yfeat.replace('NUV','\mathrm{NUV}') +'$', fontsize=fontsize)
+    plt.legend(title=legend_title)
+    
+    # Unique Markers in Legend Only (Uses Markers w/o Bold Outline)
+    handles, labels = ax.get_legend_handles_labels()
+    handles = handles[::-1]
+    labels  = labels[::-1]
+    unique  = [ (h, l) for i, (h, l) in enumerate(zip(handles, labels)) \
+                       if  l not in labels[:i] ]
+    legend  = ax.legend( *zip(*unique), loc='best',
+                         title_fontsize=int(2/3 * fontsize),
+                         prop={'size':int(2/3 * fontsize - 2) },
+                         fancybox=True,
+                         frameon=True )
+                        
+    # Set Marker Size in Legend to `small_thres` Size
+    for legend_handle in legend.legendHandles:
+        legend_handle._sizes = [marker_size * small_thres**2]
+    
+    # Removes Border Whitespace & Save
     plt.tight_layout()
     plt.savefig(plot_fname, format='pdf')
-
-
+    plt.close()
 
 ################################################################################
 
@@ -150,7 +215,6 @@ def main(data_file='kadowaki2019.tsv',
          plot_directory='../plots',
          pair_name='pair.pdf',
          color_name='color_color.pdf',
-         update_dat_file=False,
          plot_pair=False,
          plot_statistical_tests=True,
          udg_only=False,
@@ -171,17 +235,15 @@ def main(data_file='kadowaki2019.tsv',
     # Data File
     param_file = os.path.join(data_directory, data_file)
     
+    prefix = ('udgs'  if udg_only  else 'candidates') + '_' + \
+             ('local' if local_env else 'global')     + '_'
+    
     # Save to Appropriate Coordinate File
-    if udg_only:
-        if local_env: coords='redshifts2_local_udgs.dat'
-        else:         coords='redshifts2_global_udgs.dat'
-    else:
-        if local_env: coords='redshifts2_local_candidates.dat'
-        else:         coords='redshifts2_global_candidates.dat'
+    coords= prefix + 'redshifts2.dat'
     coords_file = os.path.join(data_directory, coords)
 
     # Save to Plots
-    pair_plot      = os.path.join(plot_directory, pair_name)
+    pair_plot = os.path.join(plot_directory, prefix + pair_name)
     
     three_colors = not udg_only and local_env
 
@@ -194,32 +256,40 @@ def main(data_file='kadowaki2019.tsv',
 
     ############################################################################
 
-    df_results        = read_data(param_file, udg_only=udg_only, field='Coma')
-    environment_scale = 'LocalEnv' if local_env else 'GlobalEnv'
-    df_results        = df_results.sort_values(by=[environment_scale])
-    df_results        = df_results.reset_index(drop=True)
+    df_results = read_data(param_file, udg_only=udg_only, field='Coma')
+    efeat      = 'LocalEnv' if local_env else 'GlobalEnv'
+    df_results = df_results.sort_values(by=[efeat])
+    df_results = df_results.reset_index(drop=True)
 
     ############################################################################
 
     if color_plots:
-    
-        f = os.path.splitext(color_name)
-        color_plots(df_results,
-                    xfeat="NUV-g",
-                    yfeat="g-r",
-                    ms_feat="Reff", ms=20,
-                    local_env=local_env,
-                    environment_scale=environment_scale,
-                    plot_fname=os.path.join(plot_directory, "".join(f[0]+"_Reff"+f[1])))
-                
-        color_plots(df_results,
-                    xfeat="NUV-g",
-                    yfeat="g-r",
-                    ms_feat="b/a", ms=50,
-                    local_env=local_env,
-                    environment_scale=environment_scale,
-                    plot_fname=os.path.join(plot_directory, "".join(f[0]+"_ba"+f[1])))
-                    
+        
+        color_features = ["NUV-r", "g-r", "g-z"]
+        mag_features   = ["z"]
+        
+        for idx1,color in enumerate(color_features):
+        
+            # Color-Magnitude Plots
+            for mag in mag_features:
+                if mag not in color:
+                    # File Name
+                    cm_fname = os.path.join(plot_directory,
+                               prefix + color + "_" + mag + "_.pdf")
+                    # Plot
+                    color_plots(df_results,  xfeat=mag,    yfeat=color,
+                                efeat=efeat, mfeat="Reff", plot_fname=cm_fname)
+            
+            # Color-Color Plots
+            for idx2,color2 in enumerate(color_features):
+                if (idx1 < idx2) and all([c not in color2 for c in color.split('-')]):
+                    # File Name
+                    cc_fname = os.path.join(plot_directory,
+                               prefix + color + "_" + color2 + ".pdf")
+                    # Plot
+                    color_plots(df_results,  xfeat=color2, yfeat=color,
+                                efeat=efeat, mfeat="Reff", plot_fname= cc_fname)
+                        
                     
     ############################################################################
 
@@ -317,24 +387,17 @@ def main(data_file='kadowaki2019.tsv',
     if plot_pair:
     
         sns.set(style="ticks", color_codes=True)
-        features = ["NUV",
-                    "g",
-                    #"r",
-                    #"NUVg",
-                    #"gr",
-                    "cz",
-                    "Reff", "MUg0", "b/a",
-                    "NUM500", environment_scale]
+        features = ["cz", "MUg0", "g", "g-r", "Reff", "b/a", "n", efeat]
 
         markers   = ['^',     'o']        if udg_only else ['^',      'o',       'x']
         col_list  = ['lime',   'Orange']  if udg_only else ['lime',  'Orange',  'Blue' ]
         cmap_list = ['Greens', 'Oranges'] if udg_only else ['Greens', 'Oranges', 'Blues']
-        env_list  = sorted(df_results[environment_scale].unique())
+        env_list  = sorted(df_results[efeat].unique())
         col_dict  = dict(zip(env_list, col_list))
         cmap_dict = dict(zip(env_list, cmap_list))
 
         ax = sns.PairGrid(data=df_results[features],
-                          hue=environment_scale ,
+                          hue=efeat ,
                           palette=col_dict,
                           diag_sharey=False,
                           hue_kws={"marker":markers})
@@ -349,7 +412,7 @@ def main(data_file='kadowaki2019.tsv',
             
             if len(new_args) > 1:
                 idx = args[0].index.values[0]
-                label = df_results[environment_scale].iloc[idx]
+                label = df_results[efeat].iloc[idx]
                 cmap  = cmap_dict.get(label)
                 if verbose:
                     print(idx, label, cmap)
@@ -366,9 +429,11 @@ def main(data_file='kadowaki2019.tsv',
 
         # LEGEND LABELS
         if local_env:
-            env_replacements = {'Dense':r"$\mathrm{Dense}$",   'Sparse':r"$\mathrm{Sparse}$"}
+            env_replacements = {'Dense':r"$\mathrm{Dense}$",
+                                'Sparse':r"$\mathrm{Sparse}$"}
         else:
-            env_replacements = {'Cluster':r"$\mathrm{Cluster}$", 'Non-Cluster':r"$\mathrm{Non}$-$\mathrm{Cluster}$"}
+            env_replacements = {'Cluster':r"$\mathrm{Cluster}$",
+                                'Non-Cluster':r"$\mathrm{Non}$-$\mathrm{Cluster}$"}
         if not udg_only:
             env_replacements["Unconstrained"] = r"$\mathrm{Unconstrained}$"
 
@@ -379,16 +444,18 @@ def main(data_file='kadowaki2019.tsv',
         handles = ax._legend_data.values()
 
         # ADD LEGEND & Fix Placement
-        ax.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=3, fontsize=15,
+        ax.fig.legend(handles=handles, labels=labels,
+                      loc='lower center', ncol=3, fontsize=15,
                       frameon=True, edgecolor='k', markerscale=2.5,
-                      title=r"$\mathrm{Local \, Environment}$" if local_env else r"$\mathrm{Coma \, Membership}$",
+                      title=r"$\mathrm{Local \, Environment}$" if local_env else \
+                            r"$\mathrm{Coma \, Membership}$",
                       title_fontsize=20)
         ax.fig.subplots_adjust(top=1.05, bottom=0.12)
 
 
         # AXIS LABELS
         replacements = { # Magnitudes
-                         "NUV":r'$M_\mathrm{NUV}$',
+                         "NUV":r'$\mathrm{NUV}$',
                          "g":r'$g$',
                          "r":r'$r$',
                          "z":r'$z$',
@@ -425,14 +492,7 @@ def main(data_file='kadowaki2019.tsv',
 
         # Save & Display Figure
         plt.savefig(pair_plot, bbox_inches = 'tight')
-
-
-    ############################################################################
-
-    if update_dat_file:
-        
-        with open(coords_file, 'w') as f:
-            f.write(df_results[['ra', 'dec', 'redshift', environment_scale, 'Reff']].to_string(index=False, header=False))
+        plt.close()
 
 
     ############################################################################
@@ -440,16 +500,16 @@ def main(data_file='kadowaki2019.tsv',
     if plot_statistical_tests:
 
         if local_env:
-            df_sparse    = df_results.loc[df_results[environment_scale] == "Sparse"]
-            df_dense     = df_results.loc[df_results[environment_scale] == "Dense"]
+            df_sparse    = df_results.loc[df_results[efeat] == "Sparse"]
+            df_dense     = df_results.loc[df_results[efeat] == "Dense"]
         else:
-            df_sparse    = df_results.loc[df_results[environment_scale] == "Non-Cluster"]
-            df_dense     = df_results.loc[df_results[environment_scale] == "Cluster"]
+            df_sparse    = df_results.loc[df_results[efeat] == "Non-Cluster"]
+            df_dense     = df_results.loc[df_results[efeat] == "Cluster"]
 
         feature_list = [ # Magnitudes
                            "NUV", "g", "r", "z",
                          # Colors
-                           "NUV-g", "g-r", "r-z",
+                           "NUV-g", "NUV-r", "NUV-z", "g-r", "g-z", "r-z",
                          # Intrinsic Properties
                            "n", "Reff", "MUg0", "b/a",
                          # Extrinsic Properties
@@ -457,15 +517,13 @@ def main(data_file='kadowaki2019.tsv',
 
 
         for idx, feature in enumerate(feature_list):
-            """
-            if feature=='sepMpc':
-                print([type(obj) for obj in df_sparse[feature].dropna()])
-                print([type(obj) for obj in df_dense[feature].dropna()])
-            """
+
+            # Student's T-Test
             t_stat, t_pval = stats.ttest_ind(df_sparse[feature].dropna(),
                                              df_dense[feature].dropna(),
                                              equal_var=False)
 
+            # Kolmoglov-Schmirnov Test
             ks_stat, ks_pval = stats.ks_2samp(df_sparse[feature].dropna(),
                                               df_dense[feature].dropna(),
                                               alternative="two-sided")
@@ -485,40 +543,29 @@ if __name__ == '__main__':
     print("\n~~~~~LOCAL~~~~~~")
     main(plot_pair=True,
          plot_statistical_tests=True,
-         pair_name='pair_all_local.pdf',
-         color_name='color_all_local.pdf',
          udg_only=False,
          local_env=True,
-         update_dat_file=True,
-         verbose=False)
+         verbose=False,
+         hack_color_fix=True)
     
     print("\n~~~~~~GLOBAL~~~~~~")
     main(plot_pair=True,
          plot_statistical_tests=True,
-         pair_name='pair_all_global.pdf',
-         color_name='color_all_global.pdf',
          udg_only=False,
          local_env=False,
-         update_dat_file=True,
-         hack_color_fix=True)
+         hack_color_fix=False)
     
     print("\n-------------------- ALL UDGS --------------------")
     print("\n~~~~~~LOCAL~~~~~~")
     main(plot_pair=True,
          plot_statistical_tests=True,
-         pair_name='pair_udgs_local.pdf',
-         color_name='color_udgs_local.pdf',
          udg_only=True,
          local_env=True,
-         update_dat_file=True,
          hack_color_fix=False)
          
     print("\n~~~~~~GLOBAL~~~~~~")
     main(plot_pair=True,
          plot_statistical_tests=True,
-         pair_name='pair_udgs_global.pdf',
-         color_name='color_udgs_global.pdf',
          udg_only=True,
          local_env=False,
-         update_dat_file=True,
-         hack_color_fix=True)
+         hack_color_fix=False)

@@ -3,22 +3,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 plt.rc('text', usetex=True)
-from scipy import integrate
 from math import sqrt
+import os
+import pandas as pd
+from pair_plot import read_data, get_label_color_marker
+from scipy import integrate
 
-fontsize = 20
-#from astroML.plotting import setup_text_plots
-#setup_text_plots(fontsize=20, usetex=True)
 
+# CONSTANTS
 # To plot the space distribution we need to convert redshift to
 # distance.  The values and function below are needed for this
 # conversion.
-omega_m = 0.3
-omega_lam = 0.7
-H0 = 70.    # Hubble parameter at z=0, km/s/Mpc
-c_kms = 299792.458 # speed of light, km/s
-dH = c_kms / H0          # Hubble distance, Mpc
-udg_only = True
+omega_m = 0.3147
+omega_lam = 0.6853
+H0 = 70.            # Hubble parameter at z=0, km/s/Mpc
+c_kms = 299792.458  # speed of light, km/s
+dH = c_kms / H0     # Hubble distance, Mpc
+
+# Coma Parameters
+coma_ra = 194.952917
+
+fontsize = 20
+
+
+###############################################################################
 
 def inv_efunc(z):
     """ Used to calculate the comoving distance to object at redshift
@@ -27,58 +35,57 @@ def inv_efunc(z):
 
 ###############################################################################
 
-def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
+def zplot(redshift_file='../data/kadowaki2019.tsv',
+          zplot_file='zplot.pdf',
+          plot_dir='../plots',
+          mfeat="Reff",
+          udg_only=True,
+          local_env=True):
 
+    # Define Environment
+    efeat = 'LocalEnv' if local_env else 'GlobalEnv'
 
     # Now read the LRG positions, magnitudes and redshifts and r-i colours.
-    #r = np.genfromtxt('coma_sdss.dat', dtype=None, skip_header=26,
-    #                  names='RA,Dec,z',
-    #                  usecols=(3, 4, 7))
+    # Coma Galaxies
     r = np.genfromtxt('../data/coma_vicinity.dat', dtype=None, skip_header=2,
-                      names='ra,dec,z,r,g,x0,y0',
+                      names='ra,dec,redshift,r,g,x0,y0',
                       usecols=(0, 1, 2, 3, 4, 5, 5))
-
-    q = np.genfromtxt(redshift_file, dtype=None, skip_header=0,
-                      names='ra,dec,z,env,re,x0,y0',
-                      usecols=(0, 1, 2, 3, 4, 2, 2))
-
-
+    # UDGs
+    q = read_data(redshift_file, udg_only=udg_only, field='Coma')
+    q = q[["ra", "dec", "redshift", mfeat, efeat]].dropna()
+    q = q.sort_values(by=[mfeat], ascending=False)
+    
     # Calculate the comoving distance corresponding to each object's redshift
-    dist = np.array([dH * integrate.quad(inv_efunc, 0, z)[0] for z in r['z']])
-    distq = np.array([dH * integrate.quad(inv_efunc, 0, z)[0] for z in q['z']])
+    dist  = np.array([dH * integrate.quad(inv_efunc, 0, z)[0] for z in r['redshift']])
+    distq = np.array([dH * integrate.quad(inv_efunc, 0, z)[0] for z in q['redshift']])
 
-
+    
     # Plot the distribution of galaxies, converting redshifts to positions
     # assuming Hubble flow.
-    theta = (r['ra']-194.952917) * np.pi / 180  # radians
-    r['y0'] = dist * np.cos(theta)
+    # Coma Galaxies
+    theta   = (r['ra']-coma_ra) * np.pi / 180  # radians
+    r['y0'] =  dist * np.cos(theta)
     r['x0'] = -dist * np.sin(theta)
-
-    thetaq = (q['ra']-194.952917) * np.pi / 180  # radians
-    q['y0'] = distq * np.cos(thetaq)
+    # UDGs
+    thetaq  = (q['ra']-coma_ra) * np.pi / 180  # radians
+    q['y0'] =  distq * np.cos(thetaq)
     q['x0'] = -distq * np.sin(thetaq)
-
-    condition = (r['z'] > 0.0) & (r['z']<0.041) & (abs(theta) < 0.20)
+    
+    # Coma Galaxies
+    condition  = (r['redshift'] > 0.0) & (r['redshift']<0.041) & (abs(theta)  < 0.20)
     r = r[condition]
-
-    conditionq = (q['z'] > 0.0) & (q['z']<0.041) & (abs(thetaq) < 0.20)
+    # UDGs
+    conditionq = (q['redshift'] > 0.0) & (q['redshift']<0.041) & (abs(thetaq) < 0.20)
     q = q[conditionq]
 
-    if local_env:
-        label  = {b'Dense':'$\mathrm{Dense}$', b'Sparse':'$\mathrm{Sparse}$'}  # Default: '$\mathrm{Unconstrained}$'
-        color  = {b'Dense':'lime',             b'Sparse':'orange'}             # Default: Use 'g'
-        marker = {b'Dense':'^',                b'Sparse':'o'}                  # Default: Use 'x'
-    else:
-        label  = {b'Cluster':'$\mathrm{Cluster}$',   b'Non-Cluster':'$\mathrm{Non}$-$\mathrm{Cluster}$'}  # Default: '$\mathrm{Unconstrained}$'
-        color  = {b'Cluster':'lime',               b'Non-Cluster':'orange'}                             # Default: Use 'g'
-        marker = {b'Cluster':'^',                  b'Non-Cluster':'o'}                                  # Default: Use 'x'
-
-
-    for idx in range(q.size):
-        print(idx, q['ra'][idx], q['dec'][idx],
-              label.get( q['env'][idx], '$\mathrm{Unconstrained}$'),
-              color.get( q['env'][idx], 'b'),
-              marker.get(q['env'][idx], 'x'))
+    label, color, marker, legend_title = get_label_color_marker(q, efeat)
+    marker_edge = 'k'
+    thin_line   = 0.2
+    thick_line  = 1.5
+    
+    for idx in range(len(q)):
+        print(idx, q['ra'].iloc[idx], q['dec'].iloc[idx],
+              label[idx], color[idx], marker[idx])
     
 
     # Make the area of each circle representing a galaxy position
@@ -90,19 +97,20 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
     fig.subplots_adjust(bottom=0.2, top=0.9, left=0.35, right=0.7, wspace=None, hspace = None)
 
     # Plot the galaxies, colouring points by z.
-    col = plt.scatter(r['x0'], r['y0'], marker='.', s=sizes, c='lightsteelblue', linewidths=0.3,alpha=0.4)
+    col = plt.scatter(r['x0'], r['y0'], marker='.', s=sizes, c='cornflowerblue', linewidths=0.3,alpha=0.4)
 
+    # UDGs
     sizesq = 20       # Size of Marker for R_e = 1.0 kpc
     large_thres = 3.5 # kpc
-    for idx in range(q.size):
-        col = plt.scatter(q['x0'][idx], q['y0'][idx],
-                          label  = label.get( q['env'][idx], '$\mathrm{Unconstrained}$'),
-                          color  = color.get( q['env'][idx], 'b'),
-                          marker = marker.get(q['env'][idx], 'x'),
-                          s      = sizesq * q['re'][idx],
-                          linewidth = 1.5 if q['re'][idx]>large_thres else 0.2,
-                          alpha=1,
-                          edgecolors='k')
+    for idx in range(len(q)):
+        col = plt.scatter(q['x0'].iloc[idx], q['y0'].iloc[idx],
+                          label  = label[idx],
+                          color  = color[idx],
+                          marker = marker[idx],
+                          s      = sizesq * (q[mfeat].iloc[idx])**2,
+                          alpha  = 1,
+                          edgecolors=marker_edge,
+                          linewidth = thick_line if q[mfeat].iloc[idx]>large_thres else thin_line)
 
 
     plt.xlabel('$\mathrm{X \, (Mpc)}$',        fontsize=fontsize)
@@ -114,34 +122,28 @@ def zplot(redshift_file, zplot_file, udgs_only=True, local_env=True):
     ax.yaxis.set_ticks(np.arange(-5,175,5),minor=True)
 
     handles, labels = ax.get_legend_handles_labels()
-    unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
-    legend = ax.legend(*zip(*unique), fancybox=True, prop={'size': 10},
-                       loc='lower right',  frameon=True, title_fontsize=12,
-                       title=r'$\mathrm{Local \, Environment}$' if local_env else r'$\mathrm{Coma \, Membership}$')
+    handles = handles[::-1]
+    labels  = labels[::-1]
+    unique  = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
+    legend = ax.legend(*zip(*unique), fancybox=True, prop={'size': 15},
+                       loc='lower right',  frameon=True, title_fontsize=18,
+                       title=legend_title)
 
     for legend_handle in legend.legendHandles:
-        legend_handle._sizes = [sizesq * 1.5]  # Marker Size in Legend is Threshold UDG Size
+        legend_handle._sizes = [sizesq * 1.5**2]  # Marker Size in Legend is Threshold UDG Size
 
-    plt.savefig(zplot_file, bbox_inches='tight')
+    prefix = ('udgs'  if udg_only  else 'candidates') + '_' + \
+             ('local' if local_env else 'global')     + '_'
+    plt.savefig(os.path.join(plot_dir, prefix + zplot_file), bbox_inches='tight')
+    plt.close()
 
-###############################################################################
-
-def main():
     
-    zplot('../data/redshifts2_local_candidates.dat',
-          '../plots/zplot_local_candidates.pdf',
-          udgs_only=False, local_env=True)
-    zplot('../data/redshifts2_global_candidates.dat',
-          '../plots/zplot_global_candidates.pdf',
-          udgs_only=False, local_env=False)
-    zplot('../data/redshifts2_local_udgs.dat',
-          '../plots/zplot_local_udgs.pdf',
-          udgs_only=True,  local_env=True)
-    zplot('../data/redshifts2_global_udgs.dat',
-          '../plots/zplot_global_udgs.pdf',
-          udgs_only=True,  local_env=False)
-
 ###############################################################################
 
 if __name__ == '__main__':
-    main()
+
+    zplot(udg_only=False, local_env=False)
+    zplot(udg_only=False, local_env=True)
+    zplot(udg_only=True,  local_env=False)
+    zplot(udg_only=True,  local_env=True)
+   

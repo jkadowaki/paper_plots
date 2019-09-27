@@ -5,6 +5,8 @@
 from conversions import get_angular_size, get_physical_size
 import numpy as np
 import matplotlib.pyplot as plt
+from pair_plot import get_label_color_marker, read_data
+import os
 
 
 # CONSTANTS
@@ -42,25 +44,12 @@ def load_NED_data(fname):
 
 ###############################################################################
 
-def load_OUR_data(fname):
-    """
-    """
-    # Our Spectroscopic Survey Data
-    data   = np.genfromtxt(fname, dtype=None, encoding='ascii')
-    ra, dec, z, env, size = list(zip(*data))
-    velocity   = c * np.array(z)
-    separation = get_angular_size(ra, dec, coma_ra, coma_dec)/60 # arcmin
-    
-    return separation, velocity, size, env
-
-###############################################################################
-
-def phase_space_plot(data_fname,
-                     ned_fname, plot_fname, local_env=True,
-                     kms_limit=[200,12050],
-                     arcmin_limit=[0,505],
-                     mpc_limit=[0,14.76],
-                     adjust_marker=True, legend_loc='lower right'):
+def phase_space_plot(data_fname="kadowaki2019.tsv",
+                     ned_fname="objsearch_cz2000-12000_500arcmin.txt",
+                     plot_fname="phasespace.pdf",
+                     local_env=True,
+                     udg_only=True,
+                     mfeat="Reff"):
 
     """
     Creates phase space diagram
@@ -72,128 +61,120 @@ def phase_space_plot(data_fname,
     """
     
     coma_vel, coma_dist = load_NED_data(ned_fname)
-    separation, velocity, size, env = load_OUR_data(data_fname)
+    
+    efeat = 'LocalEnv' if local_env else 'GlobalEnv'
+    
+    df = read_data(data_fname, udg_only=udg_only, field="Coma")
+    df = df[["ra", "dec", "cz", mfeat, efeat]].dropna()
+    df = df.sort_values(by=[mfeat], ascending=False)
+    
+    # Sort UDGs to Plot Largest First & Smallest Last
+    separation = get_angular_size(df["ra"], df["dec"], coma_ra, coma_dec)/60 # arcmin
 
     # Select Legend Labels, Marker Sizes & Colors & Shapes
     marker_size = 40  # Size of Marker for R_e = 1.0 kpc
     large_thres = 3.5 # kpc
+    label_size  = 30
+    label, color, marker, legend_title = get_label_color_marker(df, efeat)
     
-    if local_env:
-        label = [ r'$\mathrm{Dense}$'  if val=='Dense'  else \
-                  r'$\mathrm{Sparse}$' if val=='Sparse' else \
-                  r'$\mathrm{Unconstrained}$' for val in env]
+    # Plot Limits
+    kms_min    = 2000  if udg_only else 0
+    kms_max    = 12050 if udg_only else 13000
+    arcmin_min = 0
+    arcmin_max = 505   if udg_only else 650
+    mpc_min    = 0
+    mpc_max    = get_physical_size(60*arcmin_max, c*coma_z, H0=h0)
+    
+    # Plot Phase Space Data
+    legend_loc = 'lower right' if udg_only else 'upper right'
 
-        color = [ 'lime'   if val=='Dense'  else \
-                  'orange' if val=='Sparse' else \
-                  'blue' for val in env]
-
-        marker = [ '^' if val=='Dense'  else \
-                   'o' if val=='Sparse' else \
-                   'x' for val in env]
-    else:
-        label = [ r'$\mathrm{Cluster}$'                if val=='Cluster'     else \
-                  r'$\mathrm{Non}$-$\mathrm{Cluster}$' if val=='Non-Cluster' else \
-                  r'$\mathrm{Unconstrained}$' for val in env]
-          
-        color = [ 'lime'   if val=='Cluster'      else \
-                  'orange' if val=='Non-Cluster' else \
-                  'blue'   for val in env]
-
-        marker = [ '^' if val=='Cluster'     else \
-                   'o' if val=='Non-Cluster' else \
-                   'x' for val in env]
+    
     
     # Create Figure
     plt.clf()
     plt.rcParams['savefig.facecolor'] = "1."
     plt.rc('text', usetex=True)
-    plt.rc('font', family='serif', size='20')
+    plt.rc('font', family='serif', size='28')
 
     # Establish Axis Limits & Labels
-    fig, ax1 = plt.subplots(figsize=(10,8))
-    ax1.set_xlim(mpc_limit)
-    ax1.set_xlabel("$\mathrm{Projected \, Distance} \, (\mathrm{Mpc})$", size=20)
-    ax1.set_ylabel("$cz \, (\mathrm{km \, sec^{-1}})$", size=24)
+    fig, ax1 = plt.subplots(figsize=(10,10))
+    ax1.set_xlim(mpc_min, mpc_max)
+    ax1.set_xlabel("$\mathrm{Projected \, Distance} \, (\mathrm{Mpc})$",
+                   size=label_size)
+    ax1.set_ylabel("$cz \, (\mathrm{km \, sec^{-1}})$", size=label_size)
     
     # Plot Splashback Radius
-    ax1.plot((r_splash,r_splash), kms_limit, 'r--', linewidth=3)
+    ax1.plot((r_splash,r_splash), [kms_min, kms_max], 'r--', linewidth=3)
+    
+    plt.tick_params(which='both', direction='in', pad=15)
+    ax1.xaxis.set_ticks(np.arange(0,15,5), minor=True)
 
     # Plot Coma's Mean Recessional Velocity & Overlay with Coma Galaxies from NED
     ax2 = ax1.twiny()
-    ax2.plot(arcmin_limit, (c*coma_z, c*coma_z), 'b', linewidth=2)   # Mean Velocity
-    ax2.scatter(coma_dist, coma_vel, s=1, marker='.')                # Coma Galaxies
+    ax2.plot([arcmin_min, arcmin_max], (c*coma_z, c*coma_z),      # Mean Velocity
+             'cornflowerblue', linewidth=2)
+    ax2.scatter(coma_dist, coma_vel,
+                s=10, marker='o', c='cornflowerblue',
+                linewidths=0.3, alpha=0.4) # Coma Galaxies
 
     # UDGs
     for idx,sep in enumerate(separation):
-        ax2.scatter(sep, velocity[idx],
-                    c=color[idx], label=label[idx], marker=marker[idx],
-                    s=60*size[idx] if adjust_marker else 60,
+        ax2.scatter(sep, df["cz"].iloc[idx],
+                    color=color[idx], marker=marker[idx], label=label[idx],
+                    s=marker_size * df["Reff"].iloc[idx]**2,
                     alpha=1,
-                    linewidths=2 if size[idx] > large_thres else 0.2,
+                    linewidths=2 if df["Reff"].iloc[idx] > large_thres else 0.2,
                     edgecolors='k')
 
-    ax2.set_xlim(arcmin_limit) #arcmin
-    ax2.set_ylim(kms_limit) #km/s
-    ax2.set_xlabel("$r \, (\mathrm{arcmin})$", size=24)
+    ax2.set_xlim([arcmin_min, arcmin_max]) #arcmin
+    ax2.set_ylim([kms_min, kms_max]) #km/s
+    ax2.set_xlabel("$r \, (\mathrm{arcmin})$", size=label_size)
+    plt.tick_params(which='both', direction='in', pad=15)
+    ax2.xaxis.set_ticks(np.arange(0,500,100), minor=True)
+    ax2.yaxis.set_ticks(np.arange(2000,12000,2000), minor=True)
 
     handles, labels = ax2.get_legend_handles_labels()
+    handles = handles[::-1]
+    labels  = labels[::-1]
     unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
-    legend = ax2.legend(*zip(*unique), fancybox=True, prop={'size': 10},
-                        loc=legend_loc, frameon=True, title_fontsize=12,
+    legend = ax2.legend(*zip(*unique), fancybox=True, prop={'size': 20},
+                        loc=legend_loc, frameon=True, title_fontsize=24,
                         title=r'$\mathrm{Local \, Environment}$' if local_env
                               else r'$\mathrm{Coma \, Membership}$')
 
     for legend_handle in legend.legendHandles:
-        legend_handle._sizes = [marker_size * 1.5]
+        legend_handle._sizes = [marker_size * 1.5**2]
 
     plt.tight_layout()
     plt.savefig(plot_fname, format='pdf')
+    plt.close()
 
 
 ###############################################################################
 
-def main(udgs_only=True, local_env=True):
+def main(data_dir='../data', plot_dir='../plots', udg_only=True, local_env=True):
     
     # Appropriate File Names
-    if local_env:
-        data_fname = '../data/redshifts2_local_udgs.dat'   if udgs_only else \
-                     '../data/redshifts2_local_candidates.dat'
-        plot_fname = '../plots/phasespace_local_udgs.pdf'  if udgs_only else \
-                     '../plots/phasespace_local_candidates.pdf'
-    else:
-        data_fname = '../data/redshifts2_global_udgs.dat'  if udgs_only else \
-                     '../data/redshifts2_global_candidates.dat'
-        plot_fname = '../plots/phasespace_global_udgs.pdf' if udgs_only else \
-                     '../plots/phasespace_global_candidates.pdf'
+    prefix = ('udgs'  if udg_only  else 'candidates') + '_' + \
+             ('local' if local_env else 'global')     + '_'
+    plot_fname = os.path.join(plot_dir, prefix + "phasespace.pdf")
 
     # NED Coma Galaxies Data
-    ned_fname = '../data/objsearch_cz2000-12000_500arcmin.txt'
+    ned_fname  = os.path.join(data_dir,'objsearch_cz2000-12000_500arcmin.txt')
+    data_fname = os.path.join(data_dir,'kadowaki2019.tsv')
     
-    # Plot Limits
-    kms_min    = 2000  if udgs_only else 0
-    kms_max    = 12050 if udgs_only else 13000
-    arcmin_min = 0
-    arcmin_max = 505   if udgs_only else 650
-    mpc_min    = 0
-    mpc_max    = get_physical_size(60*arcmin_max, c*coma_z, H0=h0)
-    
-    # Plot Phase Space Data
-    legend_loc = 'lower right' if udgs_only else 'upper right'
 
-    phase_space_plot(data_fname, ned_fname,  plot_fname, local_env=local_env,
-                     kms_limit    = [kms_min,    kms_max],
-                     arcmin_limit = [arcmin_min, arcmin_max],
-                     mpc_limit    = [mpc_min,    mpc_max],
-                     adjust_marker=True,
-                     legend_loc=legend_loc)
+    phase_space_plot(data_fname, ned_fname, plot_fname=plot_fname,
+                     udg_only=udg_only,
+                     local_env=local_env)
 
 
 ###############################################################################
 
 if __name__ == '__main__':
-    main(udgs_only=True,  local_env=True)
-    main(udgs_only=True,  local_env=False)
-    main(udgs_only=False, local_env=True)
-    main(udgs_only=False, local_env=False)
+    main(udg_only=True,  local_env=True)
+    main(udg_only=True,  local_env=False)
+    main(udg_only=False, local_env=True)
+    main(udg_only=False, local_env=False)
 
 ###############################################################################
