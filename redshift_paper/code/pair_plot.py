@@ -62,13 +62,14 @@ def read_data(file, udg_only=True, field=None):
     # Creates DataFrame from list of dictionaries.
     # Specifies the data type for each columns.
     df = pd.DataFrame.from_dict(dict_list).astype(
-         {   'NAME':str,    'FIELD':str,         'ra':float,    'dec':float,
-           'sepMpc':float,     'cz':int,   'redshift':float, 'NUM500':int,
-             'Reff':float,   'MUg0':float,      'b/a':float,      'n':float,
-              'NUV':float,      'g':float,        'r':float,      'z':float,
-            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,     'UV':str,
+         {   'NAME':str,    'FIELD':str,      'TABLE':int,
+               'ra':float,    'dec':float,       'cz':int,  'redshift':float,
+           'sepMpc':float, 'sepDEG':float,   'NUM500':int,
+             'Reff':float,   'MUg0':float,      'b/a':float,       'n':float,
+              'NUV':float,      'g':float,        'r':float,       'z':float,
+            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,      'UV':str,
               'g-r':float,    'g-z':float,      'r-z':float,
-              'udg':str, 'LocalEnv':str,  'GlobalEnv':str   } )
+              'udg':str, 'LocalEnv':str,  'GlobalEnv':str      } )
 
     # Filters out objects not in specified field
     if field:
