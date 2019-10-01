@@ -276,7 +276,7 @@ def main(data_file='kadowaki2019.tsv',
                 if mag not in color:
                     # File Name
                     cm_fname = os.path.join(plot_directory,
-                               prefix + color + "_" + mag + "_.pdf")
+                               prefix + color + "_" + mag + "ß.pdf")
                     # Plot
                     color_plots(df_results,  xfeat=mag,    yfeat=color,
                                 efeat=efeat, mfeat="Reff", plot_fname=cm_fname)
