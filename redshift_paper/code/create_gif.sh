@@ -1,5 +1,18 @@
-GIF=../plots/udgs_pair.gif
-GLOBAL=../plots/udgs_global_pair.pdf
-LOCAL=../plots/udgs_local_pair.pdf
+PLOT_DIR=../plots
+SUB_DIR=$PLOT_DIR/animated
+PREFIX=udgs_global
+EXT=.pdf
 
-convert -delay 200 -loop 0 $GLOBAL $LOCAL $GIF
+mkdir -p $SUB_DIR
+
+for GLOBAL in `ls $PLOT_DIR/$PREFIX*$EXT`;
+do
+    LOCAL=${GLOBAL//global/local};
+    TMP=${GLOBAL//_global/};
+    BASE=`basename $TMP $EXT`
+    
+    convert -delay 100 -loop 0 $GLOBAL $LOCAL $SUB_DIR/$BASE.gif
+    
+done
+
+
