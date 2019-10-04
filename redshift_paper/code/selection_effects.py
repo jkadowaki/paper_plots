@@ -12,7 +12,7 @@ from pair_plot import read_data
 
 ################################################################################
 
-def plot_separation(xfeats = ["sepMpc", "Reff"],
+def plot_separation(xfeats = ["sepMpc", "Reff", "n", "MUg0", "g", "b/a", "g-z"],
                     data_fname='kadowaki2019.tsv',
                     plot_fname='SelectionEffect.pdf', udg_only=True,
                     data_directory='../data', plot_directory='../plots'):
@@ -61,7 +61,7 @@ def plot_separation(xfeats = ["sepMpc", "Reff"],
     prefix    = ('udgs'  if udg_only  else 'candidates') + '_'
     
     for xfeat in xfeats:
-        plot_file = os.path.join(plot_directory, prefix + xfeat + "_" + plot_fname)
+        plot_file = os.path.join(plot_directory, prefix + xfeat.replace("/","") + "_" + plot_fname)
 
     
         fig  = plt.subplots(  num_row,     num_col,
