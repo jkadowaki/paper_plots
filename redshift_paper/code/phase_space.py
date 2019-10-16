@@ -73,17 +73,18 @@ def phase_space_plot(data_fname="kadowaki2019.tsv",
 
     # Select Legend Labels, Marker Sizes & Colors & Shapes
     marker_size = 40  # Size of Marker for R_e = 1.0 kpc
+    small_thres = 1.5 # kpc
     large_thres = 3.5 # kpc
     label_size  = 30
     label, color, marker, legend_title = get_label_color_marker(df, efeat)
     
     # Plot Limits
-    kms_min    = 2000  if udg_only else 0
-    kms_max    = 12050 if udg_only else 13000
-    arcmin_min = 0
-    arcmin_max = 505   if udg_only else 650
-    mpc_min    = 0
-    mpc_max    = get_physical_size(60*arcmin_max, c*coma_z, H0=h0)
+    kms_min     = 2000  if udg_only else 0
+    kms_max     = 12050 if udg_only else 13000
+    arcmin_min  = 0
+    arcmin_max  = 505   if udg_only else 650
+    mpc_min     = 0
+    mpc_max     = get_physical_size(60*arcmin_max, c*coma_z, H0=h0)
     
     # Plot Phase Space Data
     legend_loc = 'lower right' if udg_only else 'upper right'
@@ -99,20 +100,23 @@ def phase_space_plot(data_fname="kadowaki2019.tsv",
     # Establish Axis Limits & Labels
     fig, ax1 = plt.subplots(figsize=(10,10))
     ax1.set_xlim(mpc_min, mpc_max)
-    ax1.set_xlabel("$\mathrm{Projected \, Distance} \, (\mathrm{Mpc})$",
+    ax1.set_xlabel("$r_\mathrm{proj} \, (\mathrm{Mpc})$",
                    size=label_size)
-    ax1.set_ylabel("$cz \, (\mathrm{km \, sec^{-1}})$", size=label_size)
+    ax1.set_ylabel("$cz \, (\mathrm{km \, s^{-1}})$", size=label_size)
     
     # Plot Splashback Radius
     ax1.plot((r_splash,r_splash), [kms_min, kms_max], 'r--', linewidth=3)
     
-    plt.tick_params(which='both', direction='in', pad=15)
-    ax1.xaxis.set_ticks(np.arange(0,15,5), minor=True)
-
+    plt.minorticks_on()
+    plt.tick_params(which='both', direction='in', pad=10, width=1.5)
+    ax1.tick_params(which='major', length=5)
+    ax1.tick_params(which='minor', length=2)
+    ax1.xaxis.set_ticks(np.arange(0,16,5))
+    
     # Plot Coma's Mean Recessional Velocity & Overlay with Coma Galaxies from NED
     ax2 = ax1.twiny()
     ax2.plot([arcmin_min, arcmin_max], (c*coma_z, c*coma_z),      # Mean Velocity
-             'cornflowerblue', linewidth=2)
+             'blue', linewidth=2)
     ax2.scatter(coma_dist, coma_vel,
                 s=10, marker='o', c='cornflowerblue',
                 linewidths=0.3, alpha=0.4) # Coma Galaxies
@@ -128,23 +132,37 @@ def phase_space_plot(data_fname="kadowaki2019.tsv",
 
     ax2.set_xlim([arcmin_min, arcmin_max]) #arcmin
     ax2.set_ylim([kms_min, kms_max]) #km/s
-    ax2.set_xlabel("$r \, (\mathrm{arcmin})$", size=label_size)
-    plt.tick_params(which='both', direction='in', pad=15)
-    ax2.xaxis.set_ticks(np.arange(0,500,100), minor=True)
-    ax2.yaxis.set_ticks(np.arange(2000,12000,2000), minor=True)
-
+    ax2.set_xlabel("$r_\mathrm{proj} \, (\mathrm{arcmin})$", size=label_size)
+    ax2.xaxis.labelpad = 20
+    plt.minorticks_on()
+    plt.tick_params(which='both', direction='in', pad=10, width=1.5)
+    ax2.tick_params(which='major', length=5)
+    ax2.tick_params(which='minor', length=2)
+    ax2.xaxis.set_ticks(np.arange(0,505,100))
+    ax2.yaxis.set_ticks(np.arange(2000,12005,2000))
+    
+    # Unique Markers in Legend Only (Uses Markers w/o Bold Outline)
     handles, labels = ax2.get_legend_handles_labels()
     handles = handles[::-1]
     labels  = labels[::-1]
-    unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
-    legend = ax2.legend(*zip(*unique), fancybox=True, prop={'size': 20},
-                        loc=legend_loc, frameon=True, title_fontsize=24,
-                        title=r'$\mathrm{Local \, Environment}$' if local_env
-                              else r'$\mathrm{Coma \, Membership}$')
+    unique  = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) \
+                      if l not in labels[:i]]
+    legend  = ax2.legend(*zip(*unique), loc=legend_loc,
+                         fancybox=True,
+                         frameon=True,
+                         prop={'size': 20},
+                         title_fontsize=24,
+                         title=legend_title)
 
+    # Set Marker Size in Legend to `small_thres` Size
     for legend_handle in legend.legendHandles:
-        legend_handle._sizes = [marker_size * 1.5**2]
+        legend_handle._sizes = [marker_size * small_thres**2]
+    
+    # Sets Axes Line Width
+    for axis in ['top','bottom','left','right']:
+        ax2.spines[axis].set_linewidth(1.5)
 
+    # Removes Border Whitespace & Save
     plt.tight_layout()
     plt.savefig(plot_fname, format='pdf')
     plt.close()

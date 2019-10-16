@@ -69,7 +69,11 @@ def read_data(file, udg_only=True, field=None):
               'NUV':float,      'g':float,        'r':float,       'z':float,
             'NUV-g':float,  'NUV-r':float,    'NUV-z':float,      'UV':str,
               'g-r':float,    'g-z':float,      'r-z':float,
-              'udg':str, 'LocalEnv':str,  'GlobalEnv':str      } )
+              'udg':str, 'LocalEnv':str,  'GlobalEnv':str,   'Density':str   } )
+
+    # Specifies High Density Environment
+    #df['DenseEnv'] = [obj['LocalEnv']=='Dense' or obj['GlobalEnv']=='Cluster'
+    #                  for obj in df]
 
     # Filters out objects not in specified field
     if field:
@@ -129,6 +133,19 @@ def get_label_color_marker(df, efeat="LocalEnv"):
                    'o'      if  val=='Non-Cluster' else \
                    'x'      for val in df[efeat] ]
         legend_title = r"$\mathrm{Coma \, Membership}$"
+        
+    # Environment Density
+    elif efeat == "Density":
+        label  = [ r'$\mathrm{High}$'           if val=='High' else \
+                   r'$\mathrm{Low}$'            if val=='Low'  else \
+                   r'$\mathrm{Unconstrained}$'  for val in df[efeat] ]
+        color  = [ 'lime'   if  val=='High' else \
+                   'orange' if  val=='Low'  else \
+                   'blue'   for val in df[efeat] ]
+        marker = [ '^'      if  val=='High' else \
+                   'o'      if  val=='Low'  else \
+                   'x'      for val in df[efeat] ]
+        legend_title = r"$\mathrm{Density}$"
                    
     else:
         label  = [None] * len(df)
@@ -162,29 +179,31 @@ def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Reff", plot_fname='c
     fontsize    = 30
     marker_size = 40
     marker_edge = 'k'
-    thin_line   = 0.2
-    thick_line  = 1.5
+    thin_line   = 0.3
+    thick_line  = 2.25
     label, color, marker, legend_title = get_label_color_marker(df, efeat)
 
     # Scatter Plot
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(9,9))
     ax = fig.add_subplot(111)
     
     for idx in range(len(df)):
         plt.scatter( df[xfeat].iloc[idx],
                      df[yfeat].iloc[idx],
-                     label=label[idx],
+                     label  = label[idx],
+                     color  = color[idx],
+                     marker = marker[idx],
                      # Marker Radius Scales Linearly with `mfeat` Value
-                     s=df[mfeat].iloc[idx]**2 * marker_size,
-                     color=color[idx],
-                     marker=marker[idx],
+                     s      = marker_size * (df[mfeat].iloc[idx])**2,
                      edgecolors=marker_edge,
                      # Add Bold Outline around `mfeat` Values above `large_thres`
-                     linewidth=thick_line if df[mfeat].iloc[idx]>large_thres \
-                                          else thin_line )
+                     linewidth=thick_line if df[mfeat].iloc[idx]>large_thres else thin_line )
 
     plt.tick_params(which='both', direction='in', pad=10, labelsize=fontsize)
-    plt.xlabel('$'+ xfeat.replace('NUV','\mathrm{NUV}') +'$', fontsize=fontsize)
+    plt.minorticks_on()
+    
+    xlabel = xfeat.replace('NUV','\mathrm{NUV}')
+    plt.xlabel(('$' if '-' in xlabel else '$M_') + xlabel +'$', fontsize=fontsize)
     plt.ylabel('$'+ yfeat.replace('NUV','\mathrm{NUV}') +'$', fontsize=fontsize)
     plt.legend(title=legend_title)
     
@@ -194,15 +213,20 @@ def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Reff", plot_fname='c
     labels  = labels[::-1]
     unique  = [ (h, l) for i, (h, l) in enumerate(zip(handles, labels)) \
                        if  l not in labels[:i] ]
-    legend  = ax.legend( *zip(*unique), loc='best',
-                         title_fontsize=int(2/3 * fontsize),
-                         prop={'size':int(2/3 * fontsize - 2) },
+    legend  = ax.legend( *zip(*unique), loc='lower right',
+                         title_fontsize=24,
+                         prop={'size':22},
                          fancybox=True,
-                         frameon=True )
+                         frameon=True,
+                         title=legend_title )
                         
     # Set Marker Size in Legend to `small_thres` Size
     for legend_handle in legend.legendHandles:
         legend_handle._sizes = [marker_size * small_thres**2]
+    
+    # Sets Axes Line Width
+    for axis in ['top','bottom','left','right']:
+        ax.spines[axis].set_linewidth(1)
     
     # Removes Border Whitespace & Save
     plt.tight_layout()
@@ -215,11 +239,12 @@ def main(data_file='kadowaki2019.tsv',
          data_directory='../data',
          plot_directory='../plots',
          pair_name='pair.pdf',
-         color_name='color_color.pdf',
+         color_name=True,
          plot_pair=False,
          plot_statistical_tests=True,
          udg_only=False,
          local_env=True,
+         density=False,
          verbose=False,
          hack_color_fix=False):
     
@@ -237,11 +262,7 @@ def main(data_file='kadowaki2019.tsv',
     param_file = os.path.join(data_directory, data_file)
     
     prefix = ('udgs'  if udg_only  else 'candidates') + '_' + \
-             ('local' if local_env else 'global')     + '_'
-    
-    # Save to Appropriate Coordinate File
-    coords= prefix + 'redshifts2.dat'
-    coords_file = os.path.join(data_directory, coords)
+             ('density' if density else ('local' if local_env else 'global')) + '_'
 
     # Save to Plots
     pair_plot = os.path.join(plot_directory, prefix + pair_name)
@@ -258,13 +279,13 @@ def main(data_file='kadowaki2019.tsv',
     ############################################################################
 
     df_results = read_data(param_file, udg_only=udg_only, field='Coma')
-    efeat      = 'LocalEnv' if local_env else 'GlobalEnv'
+    efeat      = 'Density' if density else ('LocalEnv' if local_env else 'GlobalEnv')
     df_results = df_results.sort_values(by=[efeat])
     df_results = df_results.reset_index(drop=True)
-
+    
     ############################################################################
 
-    if color_plots:
+    if color_name:
         
         color_features = ["NUV-r", "g-r", "g-z"]
         mag_features   = ["z"]
@@ -276,7 +297,7 @@ def main(data_file='kadowaki2019.tsv',
                 if mag not in color:
                     # File Name
                     cm_fname = os.path.join(plot_directory,
-                               prefix + color + "_" + mag + "ß.pdf")
+                               prefix + color + "_" + mag + ".pdf")
                     # Plot
                     color_plots(df_results,  xfeat=mag,    yfeat=color,
                                 efeat=efeat, mfeat="Reff", plot_fname=cm_fname)
@@ -412,6 +433,7 @@ def main(data_file='kadowaki2019.tsv',
             new_args = remove_repeating_lists(remove_nan(args, verbose=verbose), verbose=verbose)
             
             if len(new_args) > 1:
+                print(df_results[efeat])
                 idx = args[0].index.values[0]
                 label = df_results[efeat].iloc[idx]
                 cmap  = cmap_dict.get(label)
@@ -429,7 +451,10 @@ def main(data_file='kadowaki2019.tsv',
 
 
         # LEGEND LABELS
-        if local_env:
+        if density:
+            env_replacements = {'High':r"$\mathrm{High}$",
+                                'Low':r"$\mathrm{Low}$"}
+        elif local_env:
             env_replacements = {'Dense':r"$\mathrm{Dense}$",
                                 'Sparse':r"$\mathrm{Sparse}$"}
         else:
@@ -448,7 +473,8 @@ def main(data_file='kadowaki2019.tsv',
         ax.fig.legend(handles=handles, labels=labels,
                       loc='lower center', ncol=3, fontsize=15,
                       frameon=True, edgecolor='k', markerscale=2.5,
-                      title=r"$\mathrm{Local \, Environment}$" if local_env else \
+                      title=r"$\mathrm{Environment \, Density}$" if density else \
+                            r"$\mathrm{Local \, Environment}$" if local_env else \
                             r"$\mathrm{Coma \, Membership}$",
                       title_fontsize=20)
         ax.fig.subplots_adjust(top=1.05, bottom=0.12)
@@ -456,10 +482,10 @@ def main(data_file='kadowaki2019.tsv',
 
         # AXIS LABELS
         replacements = { # Magnitudes
-                         "NUV":r'$\mathrm{NUV}$',
-                         "g":r'$g$',
-                         "r":r'$r$',
-                         "z":r'$z$',
+                         "NUV":r'$M_\mathrm{NUV}$',
+                         "g":r'$M_g$',
+                         "r":r'$M_r$',
+                         "z":r'$M_z$',
 
                          # Colors
                          "NUV-g":r'$\mathrm{NUV} - g$',
@@ -468,7 +494,7 @@ def main(data_file='kadowaki2019.tsv',
 
                          # Intrinsic Properties
                          "n":r'$n$',
-                         "Reff":r'$R_\mathrm{eff} \, \left( \mathrm{kpc} \right)$',
+                         "Reff":r'$r_e \, \left( \mathrm{kpc} \right)$',
                          "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
                          "b/a":r'$b/a$',
 
@@ -500,7 +526,10 @@ def main(data_file='kadowaki2019.tsv',
 
     if plot_statistical_tests:
 
-        if local_env:
+        if density:
+            df_sparse    = df_results.loc[df_results[efeat] == "Low"]
+            df_dense     = df_results.loc[df_results[efeat] == "High"]
+        elif local_env:
             df_sparse    = df_results.loc[df_results[efeat] == "Sparse"]
             df_dense     = df_results.loc[df_results[efeat] == "Dense"]
         else:
@@ -542,31 +571,52 @@ if __name__ == '__main__':
     
     print("\n----------------- ALL CANDIDATES -----------------")
     print("\n~~~~~LOCAL~~~~~~")
-    main(plot_pair=True,
-         plot_statistical_tests=True,
+    main(plot_pair=False,
+         color_name=True,
+         plot_statistical_tests=False,
          udg_only=False,
          local_env=True,
          verbose=False,
          hack_color_fix=True)
     
     print("\n~~~~~~GLOBAL~~~~~~")
-    main(plot_pair=True,
-         plot_statistical_tests=True,
+    main(plot_pair=False,
+         color_name=True,
+         plot_statistical_tests=False,
          udg_only=False,
          local_env=False,
          hack_color_fix=False)
     
+    print("\n~~~~~~DENSITY~~~~~~")
+    main(plot_pair=False,
+         color_name=True,
+         plot_statistical_tests=False,
+         udg_only=False,
+         density=True,
+         hack_color_fix=False)
+    
+    
     print("\n-------------------- ALL UDGS --------------------")
     print("\n~~~~~~LOCAL~~~~~~")
-    main(plot_pair=True,
-         plot_statistical_tests=True,
+    main(plot_pair=False,
+         color_name=True,
+         plot_statistical_tests=False,
          udg_only=True,
          local_env=True,
          hack_color_fix=False)
          
     print("\n~~~~~~GLOBAL~~~~~~")
-    main(plot_pair=True,
-         plot_statistical_tests=True,
+    main(plot_pair=False,
+         color_name=True,
+         plot_statistical_tests=False,
          udg_only=True,
          local_env=False,
+         hack_color_fix=False)
+
+    print("\n~~~~~~DENSITY~~~~~~")
+    main(plot_pair=False,
+         color_name=True,
+         plot_statistical_tests=False,
+         udg_only=True,
+         density=True,
          hack_color_fix=False)

@@ -1,6 +1,7 @@
 PLOT_DIR=../plots
 SUB_DIR=$PLOT_DIR/animated
 PREFIX=udgs_global
+#PREFIX=candidates_global
 EXT=.pdf
 
 mkdir -p $SUB_DIR

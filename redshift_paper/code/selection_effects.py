@@ -31,10 +31,10 @@ def plot_separation(xfeats = ["sepMpc", "Reff", "n", "MUg0", "g", "b/a", "g-z"],
                        "cz", "NUM500" ]
 
     replacements = { # Magnitudes
-                    "NUV":r'$\mathrm{NUV}$',
-                    "g":r'$g$',
-                    "r":r'$r$',
-                    "z":r'$z$',
+                    "NUV":r'$M_\mathrm{NUV}$',
+                    "g":r'$M_g$',
+                    "r":r'$M_r$',
+                    "z":r'$M_z$',
 
                     # Colors
                     "g-r":r'$g - r$',
@@ -42,13 +42,13 @@ def plot_separation(xfeats = ["sepMpc", "Reff", "n", "MUg0", "g", "b/a", "g-z"],
             
                     # Intrinsic Properties
                     "n":r'$n$',
-                    "Reff":r'$R_\mathrm{eff} \, \left( \mathrm{kpc} \right)$',
+                    "Reff":r'$r_e \, \left( \mathrm{kpc} \right)$',
                     "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
                     "b/a":r'$b/a$',
 
                     # Extrinsic Properties
                     "cz":r'$cz \, \left( \mathrm{km/s} \right)$',
-                    "sepDEG":r'$r_\mathrm{proj} \, \left( \mathrm{Deg} \right)$',
+                    "sepDEG":r'$r_\mathrm{proj} \, \left( ^\circ \right)$',
                     "sepMpc":r'$r_\mathrm{proj} \, \left( \mathrm{Mpc} \right)$',
                     "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$' }
 
