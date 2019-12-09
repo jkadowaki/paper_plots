@@ -63,11 +63,11 @@ def read_data(file, udg_only=True, field=None):
     # Specifies the data type for each columns.
     df = pd.DataFrame.from_dict(dict_list).astype(
          {   'NAME':str,    'FIELD':str,      'TABLE':int,
-               'ra':float,    'dec':float,       'cz':int,  'redshift':float,
+               'ra':float,    'dec':float,       'cz':int,   'redshift':float,
            'sepMpc':float, 'sepDEG':float,   'NUM500':int,
-             'Reff':float,   'MUg0':float,      'b/a':float,       'n':float,
-              'NUV':float,      'g':float,        'r':float,       'z':float,
-            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,      'UV':str,
+               'Re':float,   'MUg0':float,      'b/a':float,    'n':float,
+             'Mnuv':float,     'Mg':float,       'Mr':float,   'Mz':float,
+            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,   'UV':str,
               'g-r':float,    'g-z':float,      'r-z':float,
               'udg':str, 'LocalEnv':str,  'GlobalEnv':str,   'Density':str   } )
 
@@ -157,7 +157,7 @@ def get_label_color_marker(df, efeat="LocalEnv"):
     
 ################################################################################
 
-def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Reff", plot_fname='color.pdf'):
+def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Re",  flag="UV", plot_fname='color.pdf'):
     """
     Creates color-color or color-magnitude plots.
     
@@ -166,11 +166,12 @@ def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Reff", plot_fname='c
     yfeat (str): Color or Magnitude Feature
     efeat (str): Environment Feature (i.e., 'LocalEnv' or 'GlobalEnv')
     mfeat (str): Feature to base Marker Size
+    flag  (str): Feature to Specify Detection ("Yes") or Upper Limit ("No")
     plot_fname (str): Filename of Plot
     """
 
     # Remove NaNs & Sorts Data to Plot Big Markers First
-    df = df[[xfeat, yfeat, mfeat, efeat]].dropna()
+    df = df[[xfeat, yfeat, mfeat, efeat, flag]].dropna()
     df = df.sort_values(by=[mfeat], ascending=False)
 
     # Select Legend Labels, Marker Sizes & Colors & Shapes
@@ -184,27 +185,36 @@ def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Reff", plot_fname='c
     label, color, marker, legend_title = get_label_color_marker(df, efeat)
 
     # Scatter Plot
-    fig = plt.figure(figsize=(9,9))
+    fig = plt.figure(figsize=(12,9))
     ax = fig.add_subplot(111)
     
     for idx in range(len(df)):
-        plt.scatter( df[xfeat].iloc[idx],
-                     df[yfeat].iloc[idx],
-                     label  = label[idx],
-                     color  = color[idx],
-                     marker = marker[idx],
-                     # Marker Radius Scales Linearly with `mfeat` Value
-                     s      = marker_size * (df[mfeat].iloc[idx])**2,
-                     edgecolors=marker_edge,
-                     # Add Bold Outline around `mfeat` Values above `large_thres`
-                     linewidth=thick_line if df[mfeat].iloc[idx]>large_thres else thin_line )
+        if df[flag].iloc[idx] == "No" and 'Mnuv' in yfeat:
+            plt.arrow( df[xfeat].iloc[idx], df[yfeat].iloc[idx],
+                       # Dictates Arrow Size/End point
+                       dx=0, dy=-df[mfeat].iloc[idx]/max(df[mfeat]),
+                       color = color[idx],
+                       head_width = (df[mfeat].iloc[idx]/10)**2,
+                       # Add Bold Outline around `mfeat` Values above `large_thres`
+                       linewidth=thick_line if df[mfeat].iloc[idx]>large_thres else thin_line )
+        else:
+            plt.scatter( df[xfeat].iloc[idx],
+                         df[yfeat].iloc[idx],
+                         label  = label[idx],
+                         color  = color[idx],
+                         marker = marker[idx],
+                         # Marker Radius Scales Linearly with `mfeat` Value
+                         s      = marker_size * (df[mfeat].iloc[idx])**2,
+                         edgecolors=marker_edge,
+                         # Add Bold Outline around `mfeat` Values above `large_thres`
+                         linewidth=thick_line if df[mfeat].iloc[idx]>large_thres else thin_line )
 
     plt.tick_params(which='both', direction='in', pad=10, labelsize=fontsize)
     plt.minorticks_on()
     
-    xlabel = xfeat.replace('NUV','\mathrm{NUV}')
+    xlabel = xfeat.replace('Mnuv','M_\mathrm{NUV}')
     plt.xlabel(('$' if '-' in xlabel else '$M_') + xlabel +'$', fontsize=fontsize)
-    plt.ylabel('$'+ yfeat.replace('NUV','\mathrm{NUV}') +'$', fontsize=fontsize)
+    plt.ylabel('$'+ yfeat.replace('Mnuv','M_\mathrm{NUV}') +'$', fontsize=fontsize)
     plt.legend(title=legend_title)
     
     # Unique Markers in Legend Only (Uses Markers w/o Bold Outline)
@@ -288,7 +298,7 @@ def main(data_file='kadowaki2019.tsv',
     if color_name:
         
         color_features = ["NUV-r", "g-r", "g-z"]
-        mag_features   = ["z"]
+        mag_features   = ["Mz"]
         
         for idx1,color in enumerate(color_features):
         
@@ -300,7 +310,8 @@ def main(data_file='kadowaki2019.tsv',
                                prefix + color + "_" + mag + ".pdf")
                     # Plot
                     color_plots(df_results,  xfeat=mag,    yfeat=color,
-                                efeat=efeat, mfeat="Reff", plot_fname=cm_fname)
+                                efeat=efeat, mfeat="Re", flag="UV",
+                                plot_fname=cm_fname)
             
             # Color-Color Plots
             for idx2,color2 in enumerate(color_features):
@@ -310,7 +321,8 @@ def main(data_file='kadowaki2019.tsv',
                                prefix + color + "_" + color2 + ".pdf")
                     # Plot
                     color_plots(df_results,  xfeat=color2, yfeat=color,
-                                efeat=efeat, mfeat="Reff", plot_fname= cc_fname)
+                                efeat=efeat, mfeat="Re", flag="UV",
+                                plot_fname= cc_fname)
                         
                     
     ############################################################################
@@ -409,7 +421,7 @@ def main(data_file='kadowaki2019.tsv',
     if plot_pair:
     
         sns.set(style="ticks", color_codes=True)
-        features = ["cz", "MUg0", "g", "g-r", "Reff", "b/a", "n", efeat]
+        features = ["cz", "MUg0", "Mg", "g-r", "Re", "b/a", "n", efeat]
 
         markers   = ['^',     'o']        if udg_only else ['^',      'o',       'x']
         col_list  = ['lime',   'Orange']  if udg_only else ['lime',  'Orange',  'Blue' ]
@@ -482,10 +494,10 @@ def main(data_file='kadowaki2019.tsv',
 
         # AXIS LABELS
         replacements = { # Magnitudes
-                         "NUV":r'$M_\mathrm{NUV}$',
-                         "g":r'$M_g$',
-                         "r":r'$M_r$',
-                         "z":r'$M_z$',
+                         "Mnuv":r'$M_\mathrm{NUV}$',
+                         "Mg":r'$M_g$',
+                         "Mr":r'$M_r$',
+                         "Mz":r'$M_z$',
 
                          # Colors
                          "NUV-g":r'$\mathrm{NUV} - g$',
@@ -494,7 +506,7 @@ def main(data_file='kadowaki2019.tsv',
 
                          # Intrinsic Properties
                          "n":r'$n$',
-                         "Reff":r'$r_e \, \left( \mathrm{kpc} \right)$',
+                         "Re":r'$r_e \, \left( \mathrm{kpc} \right)$',
                          "MUg0":r'$\mu \left(g,0\right) \, \left( \mathrm{mag} \, \mathrm{arcsec}^{-2} \right)$',
                          "b/a":r'$b/a$',
 
@@ -537,11 +549,11 @@ def main(data_file='kadowaki2019.tsv',
             df_dense     = df_results.loc[df_results[efeat] == "Cluster"]
 
         feature_list = [ # Magnitudes
-                           "NUV", "g", "r", "z",
+                           "Mnuv", "Mg", "Mr", "Mz",
                          # Colors
                            "NUV-g", "NUV-r", "NUV-z", "g-r", "g-z", "r-z",
                          # Intrinsic Properties
-                           "n", "Reff", "MUg0", "b/a",
+                           "n", "Re", "MUg0", "b/a",
                          # Extrinsic Properties
                            "cz", "sepMpc", "NUM500" ]
 
@@ -571,7 +583,7 @@ if __name__ == '__main__':
     
     print("\n----------------- ALL CANDIDATES -----------------")
     print("\n~~~~~LOCAL~~~~~~")
-    main(plot_pair=False,
+    main(plot_pair=True,
          color_name=True,
          plot_statistical_tests=False,
          udg_only=False,
@@ -580,7 +592,7 @@ if __name__ == '__main__':
          hack_color_fix=True)
     
     print("\n~~~~~~GLOBAL~~~~~~")
-    main(plot_pair=False,
+    main(plot_pair=True,
          color_name=True,
          plot_statistical_tests=False,
          udg_only=False,
@@ -598,7 +610,7 @@ if __name__ == '__main__':
     
     print("\n-------------------- ALL UDGS --------------------")
     print("\n~~~~~~LOCAL~~~~~~")
-    main(plot_pair=False,
+    main(plot_pair=True,
          color_name=True,
          plot_statistical_tests=False,
          udg_only=True,
@@ -606,7 +618,7 @@ if __name__ == '__main__':
          hack_color_fix=False)
          
     print("\n~~~~~~GLOBAL~~~~~~")
-    main(plot_pair=False,
+    main(plot_pair=True,
          color_name=True,
          plot_statistical_tests=False,
          udg_only=True,

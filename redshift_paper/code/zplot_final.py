@@ -38,7 +38,7 @@ def inv_efunc(z):
 def zplot(redshift_file='../data/kadowaki2019.tsv',
           zplot_file='zplot.pdf',
           plot_dir='../plots',
-          mfeat="Reff",
+          mfeat="Re",
           udg_only=True,
           local_env=True):
 
