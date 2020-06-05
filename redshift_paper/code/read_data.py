@@ -38,9 +38,10 @@ def read_data(file, udg_only=True, field=None):
          {   'NAME':str,    'FIELD':str,      'TABLE':int,
                'ra':float,    'dec':float,       'cz':int,   'redshift':float,
            'sepMpc':float, 'sepDEG':float,   'NUM500':int,
-               'Re':float,   'MUg0':float,      'b/a':float,    'n':float,
-             'Mnuv':float,     'Mg':float,       'Mr':float,   'Mz':float,
-            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,   'UV':str,
+               'Re':float,   'MUg0':float,      'b/a':float,     'n':float,
+             'Mnuv':float,     'Mg':float,       'Mr':float,    'Mz':float,
+                            'MgERR':float,    'MrERR':float, 'MzERR':float,
+            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,    'UV':str,
               'g-r':float,    'g-z':float,      'r-z':float,
               'udg':str, 'LocalEnv':str,  'GlobalEnv':str,   'Density':str   } )
 

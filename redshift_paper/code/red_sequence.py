@@ -21,7 +21,7 @@ import seaborn as sns
 import sys
 
 sys.path.append('../code')
-from pair_plot import read_data
+from read_data import read_data
 
 # CONSTANTS
 h0 = 0.6737
@@ -93,6 +93,8 @@ def main(data_name='kadowaki2019.tsv',
     # Plot
     xfeat   = "Mr"
     yfeat   = "g-r"
+    mgerr   = "MgERR"
+    mrerr   = "MrERR"
     xrange  = np.array([-22.5, -13.5])
     yrange  = np.array([0.1, 0.9])
     xrange2 = [lum_fraction(mag, L_mag) for mag in xrange]
@@ -133,10 +135,13 @@ def main(data_name='kadowaki2019.tsv',
         values    = np.unique(df_results[feat])
         df_dense  = df_results[df_results[feat] == values[0]]
         df_sparse = df_results[df_results[feat] == values[1]]
-        ax[idx].scatter(df_dense[xfeat],  df_dense[yfeat],  label=values[0],
-                        marker='^', c='Green',  edgecolors='k', linewidth=0.5)
-        ax[idx].scatter(df_sparse[xfeat], df_sparse[yfeat], label=values[1],
-                        marker='o', c='Orange', edgecolors='k', linewidth=0.5)
+
+        ax[idx].errorbar(x=df_dense[xfeat],  y=df_dense[yfeat], label=values[0], 
+                         xerr=df_dense[mrerr], yerr=df_dense[mgerr]+df_dense[mrerr],
+                         ls='none', marker='^', mfc='Green',  mec='k', linewidth=0.5)
+        ax[idx].errorbar(x=df_sparse[xfeat], y=df_sparse[yfeat], label=values[1],
+                         xerr=df_sparse[mrerr], yerr=df_sparse[mgerr]+df_sparse[mrerr],
+                         ls='none', marker='o', mfc='Orange', mec='k', linewidth=0.5)
         # Subplot Legends & Formatting
         title = r"$\mathrm{Local \, Environment}$"  if feat=="LocalEnv"  else \
                 r"$\mathrm{Global \, Environment}$" if feat=="GlobalEnv" else \
