@@ -13,6 +13,9 @@ import pandas as pd
 from scipy import stats
 import seaborn as sns
 
+import sys
+sys.path.append('../code')
+from read_data import read_data
 
 # GLOBAL VARIABLES
 hist_color = 'Green'
@@ -29,61 +32,6 @@ PAIR_PLOT.py
     (2)
     (3)
 """
-################################################################################
-
-def read_data(file, udg_only=True, field=None):
-    """
-    Loads relevant data from file into a Pandas DataFrame.
-    
-    ARGS:
-        file (str): Name of .tsv file containing UDG properties.
-    RETURNS:
-        (DataFrame):
-    """
-
-    dict_list = []
-    columns = []
-
-    with open(file) as f:
-        for idx, line in enumerate(f):
-            if idx == 0:
-                columns = line.split()
-            else:
-                dict_list.append( {key:val for key,val
-                                    in zip(columns, line.split())} )
-
-    # Converts NaNs to -1 for integer data-types
-    int_features = ['NUM500', 'NUM1000', 'cz']
-    for obj in dict_list:
-        for feat in int_features:
-            if obj.get(feat)=='NaN':
-                obj[feat] = -1
-
-    # Creates DataFrame from list of dictionaries.
-    # Specifies the data type for each columns.
-    df = pd.DataFrame.from_dict(dict_list).astype(
-         {   'NAME':str,    'FIELD':str,      'TABLE':int,
-               'ra':float,    'dec':float,       'cz':int,   'redshift':float,
-           'sepMpc':float, 'sepDEG':float,   'NUM500':int,
-               'Re':float,   'MUg0':float,      'b/a':float,    'n':float,
-             'Mnuv':float,     'Mg':float,       'Mr':float,   'Mz':float,
-            'NUV-g':float,  'NUV-r':float,    'NUV-z':float,   'UV':str,
-              'g-r':float,    'g-z':float,      'r-z':float,
-              'udg':str, 'LocalEnv':str,  'GlobalEnv':str,   'Density':str   } )
-
-    # Specifies High Density Environment
-    #df['DenseEnv'] = [obj['LocalEnv']=='Dense' or obj['GlobalEnv']=='Cluster'
-    #                  for obj in df]
-
-    # Filters out objects not in specified field
-    if field:
-        df = df.loc[df['FIELD']==field]
-
-    # Return DataFrame with UDGs only if requested.
-    if udg_only:
-        return df.loc[df['udg']=='TRUE']
-
-    return df
 
 ################################################################################
 
@@ -223,13 +171,15 @@ def color_plots(df, xfeat, yfeat, efeat="GlobalEnv", mfeat="Re",  flag="UV", plo
     labels  = labels[::-1]
     unique  = [ (h, l) for i, (h, l) in enumerate(zip(handles, labels)) \
                        if  l not in labels[:i] ]
+
     legend  = ax.legend( *zip(*unique), loc='lower right',
-                         title_fontsize=24,
                          prop={'size':22},
+                         title_fontsize=24,
                          fancybox=True,
                          frameon=True,
                          title=legend_title )
-                        
+    #legend.set_title(fontsize=24)
+    
     # Set Marker Size in Legend to `small_thres` Size
     for legend_handle in legend.legendHandles:
         legend_handle._sizes = [marker_size * small_thres**2]
@@ -251,7 +201,6 @@ def main(data_file='kadowaki2019.tsv',
          pair_name='pair.pdf',
          color_name=True,
          plot_pair=False,
-         plot_statistical_tests=True,
          udg_only=False,
          local_env=True,
          density=False,
@@ -421,11 +370,11 @@ def main(data_file='kadowaki2019.tsv',
     if plot_pair:
     
         sns.set(style="ticks", color_codes=True)
-        features = ["cz", "MUg0", "Mg", "g-r", "Re", "b/a", "n", efeat]
+        features = ["sepMpc", "MUg0", "Mg", "g-r", "Re", "b/a", "n", efeat]
 
-        markers   = ['^',     'o']        if udg_only else ['^',      'o',       'x']
-        col_list  = ['lime',   'Orange']  if udg_only else ['lime',  'Orange',  'Blue' ]
-        cmap_list = ['Greens', 'Oranges'] if udg_only else ['Greens', 'Oranges', 'Blues']
+        markers   = ['^',     'o']        if not three_colors else ['^',      'o',       'x']
+        col_list  = ['lime',   'Orange']  if not three_colors else ['lime',  'Orange',  'Blue' ]
+        cmap_list = ['Greens', 'Oranges'] if not three_colors else ['Greens', 'Oranges', 'Blues']
         env_list  = sorted(df_results[efeat].unique())
         col_dict  = dict(zip(env_list, col_list))
         cmap_dict = dict(zip(env_list, cmap_list))
@@ -512,7 +461,7 @@ def main(data_file='kadowaki2019.tsv',
 
                          # Extrinsic Properties
                          "cz":r'$cz \, \left( \mathrm{km/s} \right)$',
-                         "sepMpc":r'$r_\mathrm{proj}$ \, \left( \mathrm{Mpc} \right)',
+                         "sepMpc":r'$r_\mathrm{proj} \, \left( \mathrm{Mpc} \right)$',
                          "NUM500":r'$\mathrm{\# \, of \, Massive \, Companions}$' }
 
         for x_idx in range(len(features)-1):
@@ -534,48 +483,6 @@ def main(data_file='kadowaki2019.tsv',
         plt.close()
 
 
-    ############################################################################
-
-    if plot_statistical_tests:
-
-        if density:
-            df_sparse    = df_results.loc[df_results[efeat] == "Low"]
-            df_dense     = df_results.loc[df_results[efeat] == "High"]
-        elif local_env:
-            df_sparse    = df_results.loc[df_results[efeat] == "Sparse"]
-            df_dense     = df_results.loc[df_results[efeat] == "Dense"]
-        else:
-            df_sparse    = df_results.loc[df_results[efeat] == "Non-Cluster"]
-            df_dense     = df_results.loc[df_results[efeat] == "Cluster"]
-
-        feature_list = [ # Magnitudes
-                           "Mnuv", "Mg", "Mr", "Mz",
-                         # Colors
-                           "NUV-g", "NUV-r", "NUV-z", "g-r", "g-z", "r-z",
-                         # Intrinsic Properties
-                           "n", "Re", "MUg0", "b/a",
-                         # Extrinsic Properties
-                           "cz", "sepMpc", "NUM500" ]
-
-
-        for idx, feature in enumerate(feature_list):
-
-            # Student's T-Test
-            t_stat, t_pval = stats.ttest_ind(df_sparse[feature].dropna(),
-                                             df_dense[feature].dropna(),
-                                             equal_var=False)
-
-            # Kolmoglov-Schmirnov Test
-            ks_stat, ks_pval = stats.ks_2samp(df_sparse[feature].dropna(),
-                                              df_dense[feature].dropna(),
-                                              alternative="two-sided")
-
-            print("\nFeature:",       feature)
-            print("T-statistic:",     t_stat)
-            print("P-value (2tail):", t_pval)
-            print("KS-statistic:",    ks_stat)
-            print("P-value (2tail):", ks_pval)
-
 ################################################################################
 
 if __name__ == '__main__':
@@ -585,7 +492,6 @@ if __name__ == '__main__':
     print("\n~~~~~LOCAL~~~~~~")
     main(plot_pair=True,
          color_name=True,
-         plot_statistical_tests=False,
          udg_only=False,
          local_env=True,
          verbose=False,
@@ -594,16 +500,15 @@ if __name__ == '__main__':
     print("\n~~~~~~GLOBAL~~~~~~")
     main(plot_pair=True,
          color_name=True,
-         plot_statistical_tests=False,
          udg_only=False,
          local_env=False,
          hack_color_fix=False)
     
     print("\n~~~~~~DENSITY~~~~~~")
-    main(plot_pair=False,
+    main(plot_pair=True,
          color_name=True,
-         plot_statistical_tests=False,
          udg_only=False,
+         local_env=False,
          density=True,
          hack_color_fix=False)
     
@@ -612,7 +517,6 @@ if __name__ == '__main__':
     print("\n~~~~~~LOCAL~~~~~~")
     main(plot_pair=True,
          color_name=True,
-         plot_statistical_tests=False,
          udg_only=True,
          local_env=True,
          hack_color_fix=False)
@@ -620,15 +524,14 @@ if __name__ == '__main__':
     print("\n~~~~~~GLOBAL~~~~~~")
     main(plot_pair=True,
          color_name=True,
-         plot_statistical_tests=False,
          udg_only=True,
          local_env=False,
          hack_color_fix=False)
 
     print("\n~~~~~~DENSITY~~~~~~")
-    main(plot_pair=False,
+    main(plot_pair=True,
          color_name=True,
-         plot_statistical_tests=False,
          udg_only=True,
+         local_env=False,
          density=True,
          hack_color_fix=False)

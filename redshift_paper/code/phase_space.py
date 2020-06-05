@@ -130,7 +130,7 @@ def phase_space_plot(data_fname="kadowaki2019.tsv",
                         color=color[idx], marker=marker[idx], label=label[idx],
                         s=marker_size * df["Re"].iloc[idx]**2,
                         alpha=1,
-                        linewidths=2 if df["Re"].iloc[idx] > large_thres else 0.2,
+                        linewidths=3 if df["Re"].iloc[idx] > large_thres else 0.2,
                         edgecolors='k')
 
     ax2.set_xlim([arcmin_min, arcmin_max]) #arcmin
@@ -279,13 +279,14 @@ def phase_space_color_plot(
                     marker=marker[idx], label=label[idx],
                     s=marker_size * df["Re"].iloc[idx]**2,
                     alpha=1,
-                    linewidths=2 if df["Re"].iloc[idx] > large_thres else 0.2,
+                    linewidths=3 if df["Re"].iloc[idx] > large_thres else 0.2,
                     edgecolors='k')
                     
     sm = matplotlib.cm.ScalarMappable(cmap='jet',
                     norm=plt.Normalize(vmin=min_color, vmax=max_color))
-    clb = plt.colorbar(sm)
-    clb.ax.set_title('$' + cfeat + '$', fontsize=24)
+    clb = plt.colorbar(sm, orientation='horizontal')
+    clb.ax.set_ylabel('$' + cfeat + '$  ', fontsize=24, labelpad=20)
+    clb.ax.tick_params(labelsize=20)
 
     ax2.set_xlim([arcmin_min, arcmin_max]) #arcmin
     ax2.set_ylim([kms_min, kms_max]) #km/s
@@ -312,9 +313,14 @@ def phase_space_color_plot(
                          title=legend_title)
 
     # Set Marker Size in Legend to `small_thres` Size
+    # color_dict = dict(zip(label, color))
     for legend_handle in legend.legendHandles:
         legend_handle._sizes = [marker_size * small_thres**2]
-    
+        #legend_handle.set_facecolor( color_dict[legend_handle._label] )
+        legend_handle.set_facecolor('white')
+        legend_handle.set_edgecolor('black')
+        legend_handle.set_linewidth(1)
+
     # Sets Axes Line Width
     for axis in ['top','bottom','left','right']:
         ax2.spines[axis].set_linewidth(1.5)
@@ -339,7 +345,7 @@ def main(data_dir='../data', plot_dir='../plots', udg_only=True, local_env=True)
     # NED Coma Galaxies Data
     ned_fname  = os.path.join(data_dir,'objsearch_cz2000-12000_500arcmin.txt')
     data_fname = os.path.join(data_dir,'kadowaki2019.tsv')
-    
+    """
     phase_space_plot(data_fname, ned_fname,
                      plot_fname=os.path.join(plot_dir, "phasespace.pdf"),
                      plot_udgs=False)
@@ -347,7 +353,7 @@ def main(data_dir='../data', plot_dir='../plots', udg_only=True, local_env=True)
     phase_space_plot(data_fname, ned_fname, plot_fname=plot_fname,
                      udg_only=udg_only,
                      local_env=local_env)
-
+    """
     phase_space_color_plot(data_fname, ned_fname, plot_fname=plot_color_fname,
                            udg_only=udg_only,
                            local_env=local_env)

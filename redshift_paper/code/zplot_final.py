@@ -113,8 +113,8 @@ def zplot(redshift_file='../data/kadowaki2019.tsv',
                           linewidth = thick_line if q[mfeat].iloc[idx]>large_thres else thin_line)
 
 
-    plt.xlabel('$\mathrm{X \, (Mpc)}$', fontsize=fontsize)
-    plt.ylabel('$d \, \mathrm{(Mpc)}$', fontsize=fontsize)
+    plt.xlabel(r'$D_A \theta_\mathrm{proj} \, \mathrm{(Mpc)}$', fontsize=fontsize)
+    plt.ylabel(r'$D_L \, \mathrm{(Mpc)}$', fontsize=fontsize)
 
     plt.axis([-40,40,-10,180])
     plt.tick_params(which='both', direction='in', pad=10, labelsize=fontsize)
