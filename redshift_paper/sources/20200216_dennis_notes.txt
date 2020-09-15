@@ -1,0 +1,13 @@
+Color-color
+Indicate that there's a limit vs a measured value
+* g-r... appears to be sep w/ cluster membership
+
+
+Could try nuv-r vs g-z
+
+
+
+Coma red sequence galaxies
+Adam stanford
+Peter Eisenhard
+10.1086

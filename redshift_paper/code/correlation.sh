@@ -1,6 +1,6 @@
 #! /bin/bash
 
-PROJECT_DIR='/Users/jkadowaki/Documents/github/paper_plots/redshift_paper'
+PROJECT_DIR='/Users/jennifer_kadowaki/Documents/GitHub/paper_plots/redshift_paper'
 CODE=$PROJECT_DIR/'code'
 DATA=$PROJECT_DIR/'data'
 RESULTS=$PROJECT_DIR/'results'
@@ -15,7 +15,7 @@ RESULTS=$PROJECT_DIR/'results'
 #> $RESULTS/all_comparisons.txt
 
 
-$CODE/correlation.py $DATA/kadowaki2019.tsv \
+python $CODE/correlation.py $DATA/kadowaki2019.tsv \
                      --udgs                 \
                      --table all            \
                      --environment all      \
@@ -23,25 +23,25 @@ $CODE/correlation.py $DATA/kadowaki2019.tsv \
 #> $RESULTS/min_comparisons.txt
 
 
-$CODE/correlation.py $DATA/kadowaki2019.tsv \
-                     --udgs                 \
-                     --table all            \
-                     --environment local    \
-                     --verbose              \
-> $RESULTS/local_comparisons.txt
-
-
-$CODE/correlation.py $DATA/kadowaki2019.tsv \
-                     --udgs                 \
-                     --table all            \
-                     --environment global   \
-                     --verbose              \
-> $RESULTS/global_comparisons.txt
-
-
-$CODE/correlation.py $DATA/kadowaki2019.tsv \
-                     --udgs                 \
-                     --table all            \
-                     --environment density  \
-                     --verbose              \
-> $RESULTS/density_comparisons.txt
+#$CODE/correlation.py $DATA/kadowaki2019.tsv \
+#                     --udgs                 \
+#                     --table all            \
+#                     --environment local    \
+#                     --verbose              \
+##> $RESULTS/local_comparisons.txt
+#
+#
+#$CODE/correlation.py $DATA/kadowaki2019.tsv \
+#                     --udgs                 \
+#                     --table all            \
+#                     --environment global   \
+#                     --verbose              \
+##> $RESULTS/global_comparisons.txt
+#
+#
+#$CODE/correlation.py $DATA/kadowaki2019.tsv \
+#                     --udgs                 \
+#                     --table all            \
+#                     --environment density  \
+#                     --verbose              \
+##> $RESULTS/density_comparisons.txt

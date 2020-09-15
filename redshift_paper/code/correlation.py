@@ -187,6 +187,49 @@ def get_data(data_file, table=[2,3,4], udgs_only=True, field='Coma', environment
 
 ################################################################################
 
+def compute_distribution(df_dict, feature, verbose=True, environment='LocalEnv'):
+    """
+    
+    """
+
+    if verbose:
+        print("Testing Sparse & Dense Distributions in:", feature)
+
+    correlation = []
+
+    df = df_dict['all']
+    dfs = df.loc[df['LocalEnv']  == "Sparse"][feature].dropna()
+    dfd = df.loc[df['LocalEnv']  == "Dense"][feature].dropna()
+    dfn = df.loc[df['GlobalEnv'] == "Non-Cluster"][feature].dropna()
+    dfc = df.loc[df['GlobalEnv'] == "Cluster"][feature].dropna()
+    dfl = df.loc[df['Density']   == "Low"][feature].dropna()
+    dfh = df.loc[df['Density']   == "High"][feature].dropna()
+    
+    for df1, df2,env1,env2 in [(dfs,dfd,'sparse', 'dense  '),
+                               (dfn,dfc,'non-cl', 'cluster'),
+                               (dfl,dfh,'high  ', 'low    ')]:
+        t_stat,  t_pvalue  = stats.ttest_ind(df1, df2)
+        ks_stat, ks_pvalue = stats.ks_2samp(df1,  df2)
+
+        correlation.append( {'feature':     feature,
+                             env1 + '_num': len(df1),
+                             env2 + '_num': len(df2),
+                             'p-value':     t_pvalue,
+                             't-stat':      t_stat,
+                           } )
+                           
+        correlation.append( {'feature':     feature,
+                             env1 + '_num': len(df1),
+                             env2 + '_num': len(df2),
+                             'p-value':     ks_pvalue,
+                             'ks-stat':     ks_stat
+                           } )
+    
+    return correlation
+
+
+################################################################################
+
 def compute_correlation(df_dict, feature1, feature2, verbose=True):
     """
     
@@ -203,13 +246,14 @@ def compute_correlation(df_dict, feature1, feature2, verbose=True):
             rho, p_value = stats.spearmanr(df_relevant)
             t_stat       = test_statistic(rho, len(df_relevant))
 
-            correlation.append( {'environment': key, 
+            correlation.append( {'environment': key,
                                  'feature1':    feature1,
                                  'feature2':    feature2,
                                  'num':         len(df_relevant),
                                  'rho':         rho,
                                  'p-value':     p_value,
                                  't-stat':      t_stat} )
+    
     return correlation
 
 
@@ -221,7 +265,8 @@ def print_dictlist(dictlist):
     """
     if dictlist:
         # Get Keys & Lengths of Values
-        max_length = {key:len(str(val)) for key,val in dictlist[0].items()}
+        max_length = {key:len(str(val)) for idx in range(len(dictlist))
+                                        for key,val in dictlist[idx].items() }
 
         # Iterate through list and retrieve maximum value length for each key
         for dictionary in dictlist:
@@ -295,36 +340,29 @@ def main(data_file='kadowaki2019.tsv', table=[2,3,4],
                        'colors':     ["NUV-g", "NUV-r", "NUV-z", "g-r", "g-z", "r-z"],
                        'intrinsic':  ["n", "Re", "MUg0", "b/a"],
                        'extrinsic':  ["cz", "sepMpc", "NUM500"] }
-    """
-    for fg_idx1, fgroup1 in enumerate(feature_groups):
-        for fg_idx2, fgroup2 in enumerate(feature_groups):
-            
-            # Skip; Already visited.
-            if fg_idx1 >= fg_idx2:
-                continue
-    
-            # Iterate through
-            for f1 in feature_dict[fgroup1]:
-                for f2 in feature_dict[fgroup2]:
-                    correlation.extend(
-                        compute_correlation(df_dict, f1, f2, verbose=verbose) )
-    """
+
 
     # User-specified pairs of features
     features      = [ 'sepMpc', 'MUg0', 'Mg', 'g-r', 'Re', 'b/a', 'n' ]
-    exclude_pairs = [] #[ ('sepMpc', 'cz'), ('cz', 'sepMpc'), 
-                       #  ('Re',     'Mg'), ('Mg', 'Re'),
-                       #  ('g-r',    'Mg'), ('Mg', 'g-r') ]
+    exclude_pairs = []   #[ ('sepMpc', 'cz'), ('cz', 'sepMpc'),
+                         #  ('Re',     'Mg'), ('Mg', 'Re'),
+                         #  ('g-r',    'Mg'), ('Mg', 'g-r') ]
     feature_pairs = [ (f1, f2) for idx1,f1 in enumerate(features) 
                                for idx2,f2 in enumerate(features)
                                if  idx1>idx2
                                if  (f1, f2) not in exclude_pairs ]
-    
+
+    for feat in features:
+        correlation.extend( compute_distribution(df_dict, feat, verbose=verbose) )
+
     for f1, f2 in feature_pairs:
         correlation.extend( compute_correlation(df_dict, f1, f2, verbose=verbose) )
 
     bonferroni_correction( correlation, normalization_factor,
                            significance=0.05, verbose=verbose )
+                           
+    print("\nAll Hypothesis Tests:")
+    print_dictlist(correlation)
 
 
 ################################################################################

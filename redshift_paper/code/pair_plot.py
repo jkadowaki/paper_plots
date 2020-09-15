@@ -433,7 +433,7 @@ def main(data_file='kadowaki2019.tsv',
         # ADD LEGEND & Fix Placement
         ax.fig.legend(handles=handles, labels=labels,
                       loc='lower center', ncol=3, fontsize=15,
-                      frameon=True, edgecolor='k', markerscale=2.5,
+                      frameon=True, edgecolor='k', markerscale=2.5, shadow=True,
                       title=r"$\mathrm{Environment \, Density}$" if density else \
                             r"$\mathrm{Local \, Environment}$" if local_env else \
                             r"$\mathrm{Coma \, Membership}$",

@@ -1,0 +1,41 @@
+Title: Ultra-Diffuse Galaxies at Ultraviolet Wavelengths 
+Authors: RS P., Zaritsky D., Donnerstein R., Spekkens K. 
+Table: NUV-Detected UDG Candidates Photometry
+================================================================================
+Byte-by-byte Description of file: ajab16f2t2_mrt.txt
+--------------------------------------------------------------------------------
+   Bytes Format Units    Label   Explanations
+--------------------------------------------------------------------------------
+   1- 18 A18    ---      Name    Galaxy Name in Catalog, SMDGHHMMSSS+DDMMSS (1)
+  20- 23 F4.1   arcsec   Rad     Half-light radius (1)
+  25- 29 F5.2   mag      rmag    r-band magnitude, extinction corrected (1)
+  31- 35 F5.2   mag      NUVmag  GALEX NUV AB magnitude, extinction corrected
+  37- 40 F4.2   mag    e_NUVmag  Uncertainty in NUVmag
+  42- 42 A1     ---    l_FUVmag  Limit flag on FUVmag (2)
+  45- 49 F5.2   mag      FUVmag  GALEX FUV AB magnitude, extinction corrected
+  51- 54 F4.2   mag    e_FUVmag  Uncertainty in FUVmag
+  56- 59 F4.2   mag      E(B-V)  Adopted color excess, Galactic extinction (3)
+--------------------------------------------------------------------------------
+Note (1): Galaxy name, effective radius and r-band magnitude from the 
+    Zaritsky et al. (2019ApJS..240....1Z) catalog.
+Note (2): Lower limits on FUVmag provided for the objects that are not visually 
+    discernable in the FUV band.
+Note (3): Magnitudes extinction corrected using reddening maps from 
+    Schlafly & Finkbeiner (2011ApJ...737..103S).
+--------------------------------------------------------------------------------
+SMDG1223447+295951  9.7 18.39 21.11 0.26 >  23.54 0.61 0.02 
+SMDG1225264+311647  8.5 17.62 21.68 0.38 >  22.07 0.14 0.02 
+SMDG1228115+290105  5.3 20.04 22.56 0.55    22.98 0.20 0.02 
+SMDG1230455+264650  5.8 19.02 20.64 0.10 >  22.31 0.12 0.02 
+SMDG1237294+204442  6.4 19.56 21.64 0.30 >  24.20 0.80 0.03 
+SMDG1243448+323203 12.9 17.88 21.11 0.33 >  23.85 1.05 0.01 
+SMDG1249412+270646  9.0 18.98 20.89 0.19    22.86 0.29 0.01 
+SMDG1251456+305429  5.3 21.06 22.55 0.51 >  25.59 2.13 0.01 
+SMDG1256265+285929  7.8 19.11 21.89 0.40 >  23.41 0.41 0.01 
+SMDG1306148+275941  9.4 19.14 21.81 0.45    23.32 0.45 0.01 
+SMDG1307463+291231  8.6 19.09 22.14 0.55 >  24.70 1.45 0.01 
+SMDG1313187+312453 22.5 16.47 20.21 0.25 >  21.96 0.31 0.01 
+SMDG1315427+311847  9.6 18.51 20.18 0.10 >  21.34 0.07 0.01 
+SMDG1320482+314822  5.9 19.58 21.56 0.23    22.86 0.19 0.01 
+SMDG1333170+281431  5.9 19.51 21.27 0.18    22.73 0.17 0.01 
+SMDG1340312+282659  6.9 19.86 21.22 0.19    23.92 0.59 0.01 

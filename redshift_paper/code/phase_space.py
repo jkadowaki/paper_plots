@@ -6,7 +6,8 @@ from conversions import get_angular_size, get_physical_size
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from pair_plot import get_label_color_marker, read_data
+from pair_plot import get_label_color_marker
+from read_data import read_data
 import os
 
 
@@ -101,58 +102,60 @@ def phase_space_plot(data_fname="kadowaki2019.tsv",
 
     # Establish Axis Limits & Labels
     fig, ax1 = plt.subplots(figsize=(10,10))
-    ax1.set_xlim(mpc_min, mpc_max)
-    ax1.set_xlabel("$r_\mathrm{proj} \, (\mathrm{Mpc})$",
+    ax2 = ax1.twiny()
+    ax2.set_xlim(mpc_min, mpc_max)
+    ax2.set_xlabel("$r_\mathrm{proj} \, (\mathrm{Mpc})$",
                    size=label_size)
     ax1.set_ylabel("$cz \, (\mathrm{km \, s^{-1}})$", size=label_size)
     
     # Plot Splashback Radius
-    ax1.plot((r_splash,r_splash), [kms_min, kms_max], 'r--', linewidth=3)
+    ax2.plot((r_splash,r_splash), [kms_min, kms_max], 'r--', linewidth=3)
     
     plt.minorticks_on()
     plt.tick_params(which='both', direction='in', pad=10, width=1.5)
-    ax1.tick_params(which='major', length=5)
-    ax1.tick_params(which='minor', length=2)
-    ax1.xaxis.set_ticks(np.arange(0,16,5))
+    ax2.tick_params(which='major', length=5)
+    ax2.tick_params(which='minor', length=2)
+    ax2.xaxis.set_ticks(np.arange(0,16,5))
     
     # Plot Coma's Mean Recessional Velocity & Overlay with Coma Galaxies from NED
-    ax2 = ax1.twiny()
-    ax2.plot([arcmin_min, arcmin_max], (c*coma_z, c*coma_z),      # Mean Velocity
+    ax1.plot([arcmin_min, arcmin_max], (c*coma_z, c*coma_z),      # Mean Velocity
              'blue', linewidth=2)
-    ax2.scatter(coma_dist, coma_vel,
+    ax1.scatter(coma_dist, coma_vel,
                 s=10, marker='o', c='cornflowerblue',
                 linewidths=0.3, alpha=0.4) # Coma Galaxies
                 
     # Plot UDGs
     if plot_udgs:
         for idx,sep in enumerate(separation):
-            ax2.scatter(sep, df["cz"].iloc[idx],
+            ax1.scatter(sep, df["cz"].iloc[idx],
                         color=color[idx], marker=marker[idx], label=label[idx],
                         s=marker_size * df["Re"].iloc[idx]**2,
                         alpha=1,
                         linewidths=3 if df["Re"].iloc[idx] > large_thres else 0.2,
                         edgecolors='k')
 
-    ax2.set_xlim([arcmin_min, arcmin_max]) #arcmin
-    ax2.set_ylim([kms_min, kms_max]) #km/s
-    ax2.set_xlabel("$r_\mathrm{proj} \, (\mathrm{arcmin})$", size=label_size)
-    ax2.xaxis.labelpad = 20
+    ax1.set_xlim([arcmin_min, arcmin_max]) #arcmin
+    ax1.set_ylim([kms_min, kms_max]) #km/s
+    #ax1.set_ylabel("$cz \, (\mathrm{km \, s^{-1}})$", size=label_size)
+    ax1.set_xlabel("$r_\mathrm{proj} \, (\mathrm{arcmin})$", size=label_size)
+    ax1.xaxis.labelpad = 20
     plt.minorticks_on()
     plt.tick_params(which='both', direction='in', pad=10, width=1.5)
-    ax2.tick_params(which='major', length=5)
-    ax2.tick_params(which='minor', length=2)
-    ax2.xaxis.set_ticks(np.arange(0,505,100))
-    ax2.yaxis.set_ticks(np.arange(2000,12005,2000))
+    ax1.tick_params(which='major', length=5)
+    ax1.tick_params(which='minor', length=2)
+    ax1.xaxis.set_ticks(np.arange(0,505,100))
+    ax1.yaxis.set_ticks(np.arange(2000,12005,2000))
     
     if plot_udgs:
         # Unique Markers in Legend Only (Uses Markers w/o Bold Outline)
-        handles, labels = ax2.get_legend_handles_labels()
+        handles, labels = ax1.get_legend_handles_labels()
         handles = handles[::-1]
         labels  = labels[::-1]
         unique  = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) \
                           if l not in labels[:i]]
-        legend  = ax2.legend(*zip(*unique), loc=legend_loc,
+        legend  = ax1.legend(*zip(*unique), loc=legend_loc,
                              fancybox=True,
+                             shadow=True,
                              frameon=True,
                              prop={'size': 20},
                              title_fontsize=24,
@@ -164,7 +167,7 @@ def phase_space_plot(data_fname="kadowaki2019.tsv",
     
     # Sets Axes Line Width
     for axis in ['top','bottom','left','right']:
-        ax2.spines[axis].set_linewidth(1.5)
+        ax1.spines[axis].set_linewidth(1.5)
 
     # Removes Border Whitespace & Save
     plt.tight_layout()
@@ -233,25 +236,25 @@ def phase_space_color_plot(
 
     # Establish Axis Limits & Labels
     fig, ax1 = plt.subplots(figsize=(10,10))
-    ax1.set_xlim(mpc_min, mpc_max)
-    ax1.set_xlabel("$r_\mathrm{proj} \, (\mathrm{Mpc})$",
+    ax2 = ax1.twiny()
+    ax2.set_xlim(mpc_min, mpc_max)
+    ax2.set_xlabel("$r_\mathrm{proj} \, (\mathrm{Mpc})$",
                    size=label_size)
     ax1.set_ylabel("$cz \, (\mathrm{km \, s^{-1}})$", size=label_size)
     
     # Plot Splashback Radius
-    ax1.plot((r_splash,r_splash), [kms_min, kms_max], 'r--', linewidth=3)
+    ax2.plot((r_splash,r_splash), [kms_min, kms_max], 'r--', linewidth=3)
     
     plt.minorticks_on()
     plt.tick_params(which='both', direction='in', pad=10, width=1.5)
-    ax1.tick_params(which='major', length=5)
-    ax1.tick_params(which='minor', length=2)
-    ax1.xaxis.set_ticks(np.arange(0,16,5))
+    ax2.tick_params(which='major', length=5)
+    ax2.tick_params(which='minor', length=2)
+    ax2.xaxis.set_ticks(np.arange(0,16,5))
     
     # Plot Coma's Mean Recessional Velocity & Overlay with Coma Galaxies from NED
-    ax2 = ax1.twiny()
-    ax2.plot([arcmin_min, arcmin_max], (c*coma_z, c*coma_z),      # Mean Velocity
+    ax1.plot([arcmin_min, arcmin_max], (c*coma_z, c*coma_z),      # Mean Velocity
              'blue', linewidth=2)
-    ax2.scatter(coma_dist, coma_vel,
+    ax1.scatter(coma_dist, coma_vel,
                 s=10, marker='o', c='cornflowerblue',
                 linewidths=0.3, alpha=0.4) # Coma Galaxies
 
@@ -259,22 +262,24 @@ def phase_space_color_plot(
     cmap = matplotlib.cm.get_cmap('jet')
     min_color = -0.21
     max_color = 0.81
+    constant  = 2
     
     for idx,sep in enumerate(separation):
         col = (df[cfeat].iloc[idx] - min_color) / (max_color - min_color)
 
         # UV Detection
         if df[flag].iloc[idx]=='Yes':
-            ax2.scatter(sep, df["cz"].iloc[idx],
+            offset = 60 if marker[idx] is '^' else 0
+            ax1.scatter(sep, df["cz"].iloc[idx] + offset,
                         facecolors='none',
                         marker=marker[idx] if marker[idx] is not 'x' else 'o',
-                        s= 50 + 1.5 * (marker_size * df["Re"].iloc[idx]**2),
+                        s=marker_size * (constant + df["Re"].iloc[idx])**2,
                         alpha=1,
                         linewidths=2,
                         edgecolors='darkviolet')
 
         # g-r Color
-        ax2.scatter(sep, df["cz"].iloc[idx],
+        ax1.scatter(sep, df["cz"].iloc[idx],
                     color=cmap(col),
                     marker=marker[idx], label=label[idx],
                     s=marker_size * df["Re"].iloc[idx]**2,
@@ -288,25 +293,26 @@ def phase_space_color_plot(
     clb.ax.set_ylabel('$' + cfeat + '$  ', fontsize=24, labelpad=20)
     clb.ax.tick_params(labelsize=20)
 
-    ax2.set_xlim([arcmin_min, arcmin_max]) #arcmin
-    ax2.set_ylim([kms_min, kms_max]) #km/s
-    ax2.set_xlabel("$r_\mathrm{proj} \, (\mathrm{arcmin})$", size=label_size)
-    ax2.xaxis.labelpad = 20
+    ax1.set_xlim([arcmin_min, arcmin_max]) #arcmin
+    ax1.set_ylim([kms_min, kms_max]) #km/s
+    ax1.set_xlabel("$r_\mathrm{proj} \, (\mathrm{arcmin})$", size=label_size)
+    ax1.xaxis.labelpad = 20
     plt.minorticks_on()
     plt.tick_params(which='both', direction='in', pad=10, width=1.5)
-    ax2.tick_params(which='major', length=5)
-    ax2.tick_params(which='minor', length=2)
-    ax2.xaxis.set_ticks(np.arange(0,505,100))
-    ax2.yaxis.set_ticks(np.arange(2000,12005,2000))
+    ax1.tick_params(which='major', length=5)
+    ax1.tick_params(which='minor', length=2)
+    ax1.xaxis.set_ticks(np.arange(0,505,100))
+    ax1.yaxis.set_ticks(np.arange(2000,12005,2000))
     
     # Unique Markers in Legend Only (Uses Markers w/o Bold Outline)
-    handles, labels = ax2.get_legend_handles_labels()
+    handles, labels = ax1.get_legend_handles_labels()
     handles = handles[::-1]
     labels  = labels[::-1]
     unique  = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) \
                       if l not in labels[:i]]
-    legend  = ax2.legend(*zip(*unique), loc=legend_loc,
+    legend  = ax1.legend(*zip(*unique), loc=legend_loc,
                          fancybox=True,
+                         shadow=True,
                          frameon=True,
                          prop={'size': 20},
                          title_fontsize=24,
@@ -323,7 +329,7 @@ def phase_space_color_plot(
 
     # Sets Axes Line Width
     for axis in ['top','bottom','left','right']:
-        ax2.spines[axis].set_linewidth(1.5)
+        ax1.spines[axis].set_linewidth(1.5)
 
     # Removes Border Whitespace & Save
     plt.tight_layout()
@@ -345,15 +351,12 @@ def main(data_dir='../data', plot_dir='../plots', udg_only=True, local_env=True)
     # NED Coma Galaxies Data
     ned_fname  = os.path.join(data_dir,'objsearch_cz2000-12000_500arcmin.txt')
     data_fname = os.path.join(data_dir,'kadowaki2019.tsv')
-    """
-    phase_space_plot(data_fname, ned_fname,
-                     plot_fname=os.path.join(plot_dir, "phasespace.pdf"),
-                     plot_udgs=False)
+    
 
     phase_space_plot(data_fname, ned_fname, plot_fname=plot_fname,
                      udg_only=udg_only,
                      local_env=local_env)
-    """
+    
     phase_space_color_plot(data_fname, ned_fname, plot_fname=plot_color_fname,
                            udg_only=udg_only,
                            local_env=local_env)

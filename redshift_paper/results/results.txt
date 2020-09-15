@@ -1,0 +1,125 @@
+
+Parameters: Namespace(data='/Users/jennifer_kadowaki/Documents/GitHub/paper_plots/redshift_paper/data/kadowaki2019.tsv', environment=['all'], table=['all'], udgs_only=True, verbose=True)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+File:        /Users/jennifer_kadowaki/Documents/GitHub/paper_plots/redshift_paper/data/kadowaki2019.tsv
+Table:       [2, 3, 4]
+Objects:     UDGs
+Environment: ['all'] 
+
+Testing Sparse & Dense Distributions in: sepMpc
+Testing Sparse & Dense Distributions in: MUg0
+Testing Sparse & Dense Distributions in: Mg
+Testing Sparse & Dense Distributions in: g-r
+Testing Sparse & Dense Distributions in: Re
+Testing Sparse & Dense Distributions in: b/a
+Testing Sparse & Dense Distributions in: n
+Testing Correlations between:   MUg0 and sepMpc
+Testing Correlations between:     Mg and sepMpc
+Testing Correlations between:     Mg and MUg0
+Testing Correlations between:    g-r and sepMpc
+Testing Correlations between:    g-r and MUg0
+Testing Correlations between:    g-r and Mg
+Testing Correlations between:     Re and sepMpc
+Testing Correlations between:     Re and MUg0
+Testing Correlations between:     Re and Mg
+Testing Correlations between:     Re and g-r
+Testing Correlations between:    b/a and sepMpc
+Testing Correlations between:    b/a and MUg0
+Testing Correlations between:    b/a and Mg
+Testing Correlations between:    b/a and g-r
+Testing Correlations between:    b/a and Re
+Testing Correlations between:      n and sepMpc
+Testing Correlations between:      n and MUg0
+Testing Correlations between:      n and Mg
+Testing Correlations between:      n and g-r
+Testing Correlations between:      n and Re
+Testing Correlations between:      n and b/a
+
+Number of Tables:         1
+Number of Comparisons:    63 per Table
+                          63 Total
+
+Uncorrected Significance: 0.05
+New Significance Level:   0.0007936507936507937
+
+Rejected Hypotheses:
+{'feature': 'sepMpc', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.00031492303796232474', 't-stat': '3.9631980575010606 '}
+{'feature': 'sepMpc', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '1.2667012051510706e-06', 't-stat': '5.746838757421954  '}
+{'feature': 'sepMpc', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '3.18213233541087e-11  ', 'ks-stat': '1.00000'}
+{'feature': 'sepMpc', 'high  _num': '13', 'low    _num': '27', 'p-value': '7.743491081010399e-08 ', 't-stat': '6.633191045003583  '}
+{'feature': 'sepMpc', 'high  _num': '13', 'low    _num': '27', 'p-value': '9.706460324387933e-08 ', 'ks-stat': '0.88889'}
+{'feature': 'g-r   ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '6.565993719305604e-07 ', 't-stat': '-5.954824250393307 '}
+{'feature': 'g-r   ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '2.1437182920913678e-05', 'ks-stat': '0.72917'}
+{'feature': 'g-r   ', 'high  _num': '13', 'low    _num': '27', 'p-value': '3.872224925267244e-06 ', 't-stat': '-5.392677079781032 '}
+{'feature': 'g-r   ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.00011071996366163184', 'ks-stat': '0.70085'}
+{'environment': 'all', 'feature1': 'Mg ', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.5427673257041826', 'p-value': '0.00029637442181733444', 't-stat': '-3.98370021114651  '}
+{'environment': 'all', 'feature1': 'g-r', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.6295601905098118', 'p-value': '1.3485600718926302e-05', 't-stat': '-4.994994646527786 '}
+{'environment': 'all', 'feature1': 'Re ', 'feature2': 'Mg    ', 'num': '40', 'rho': '-0.861318321379522 ', 'p-value': '9.891898325771655e-13 ', 't-stat': '-10.450464941271244'}
+{'environment': 'all', 'feature1': 'n  ', 'feature2': 'MUg0  ', 'num': '40', 'rho': '-0.5861163227016887', 'p-value': '7.070699122499315e-05 ', 't-stat': '-4.45932317643094  '}
+
+All Hypothesis Tests:
+{'feature': 'sepMpc', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.00031492303796232474', 't-stat': '3.9631980575010606  '}
+{'feature': 'sepMpc', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.0011422797755438197 ', 'ks-stat': '0.58396'}
+{'feature': 'sepMpc', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '1.2667012051510706e-06', 't-stat': '5.746838757421954   '}
+{'feature': 'sepMpc', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '3.18213233541087e-11  ', 'ks-stat': '1.00000'}
+{'feature': 'sepMpc', 'high  _num': '13', 'low    _num': '27', 'p-value': '7.743491081010399e-08 ', 't-stat': '6.633191045003583   '}
+{'feature': 'sepMpc', 'high  _num': '13', 'low    _num': '27', 'p-value': '9.706460324387933e-08 ', 'ks-stat': '0.88889'}
+{'feature': 'MUg0  ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.3050569789674956    ', 't-stat': '1.0396841423988306  '}
+{'feature': 'MUg0  ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.5093498406599921    ', 'ks-stat': '0.23810'}
+{'feature': 'MUg0  ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.718478775150837     ', 't-stat': '-0.363185703426921  '}
+{'feature': 'MUg0  ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.6410846665777326    ', 'ks-stat': '0.22917'}
+{'feature': 'MUg0  ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.8508693708145343    ', 't-stat': '0.18929462704517938 '}
+{'feature': 'MUg0  ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.6870979597445968    ', 'ks-stat': '0.21937'}
+{'feature': 'Mg    ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.21767070480066394   ', 't-stat': '-1.2535298677436886 '}
+{'feature': 'Mg    ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.15739451371917446   ', 'ks-stat': '0.33584'}
+{'feature': 'Mg    ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.010486399406920763  ', 't-stat': '-2.692665662099248  '}
+{'feature': 'Mg    ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.004697219285427545  ', 'ks-stat': '0.54167'}
+{'feature': 'Mg    ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.06859399298924876   ', 't-stat': '-1.8742884583645028 '}
+{'feature': 'Mg    ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.09682977483418809   ', 'ks-stat': '0.39601'}
+{'feature': 'g-r   ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.0045051287682265255 ', 't-stat': '-3.0196805676587215 '}
+{'feature': 'g-r   ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.008821314981299677  ', 'ks-stat': '0.49875'}
+{'feature': 'g-r   ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '6.565993719305604e-07 ', 't-stat': '-5.954824250393307  '}
+{'feature': 'g-r   ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '2.1437182920913678e-05', 'ks-stat': '0.72917'}
+{'feature': 'g-r   ', 'high  _num': '13', 'low    _num': '27', 'p-value': '3.872224925267244e-06 ', 't-stat': '-5.392677079781032  '}
+{'feature': 'g-r   ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.00011071996366163184', 'ks-stat': '0.70085'}
+{'feature': 'Re    ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.6148780022533475    ', 't-stat': '0.5072971209564295  '}
+{'feature': 'Re    ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.3149500209199393    ', 'ks-stat': '0.28321'}
+{'feature': 'Re    ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.03150606862146321   ', 't-stat': '2.2331451778487503  '}
+{'feature': 'Re    ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.08125181319215302   ', 'ks-stat': '0.39583'}
+{'feature': 'Re    ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.39292572452053265   ', 't-stat': '0.8641536164627446  '}
+{'feature': 'Re    ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.16181018147982684   ', 'ks-stat': '0.35897'}
+{'feature': 'b/a   ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.8100904625356642    ', 't-stat': '-0.24198828295628072'}
+{'feature': 'b/a   ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.3537218462241434    ', 'ks-stat': '0.27569'}
+{'feature': 'b/a   ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.3458747742321454    ', 't-stat': '-0.954477377368537  '}
+{'feature': 'b/a   ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.26824958340911786   ', 'ks-stat': '0.31250'}
+{'feature': 'b/a   ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.6274809384668095    ', 't-stat': '-0.4892443578539823 '}
+{'feature': 'b/a   ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.24263712466032228   ', 'ks-stat': '0.32479'}
+{'feature': 'n     ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.07319926674973182   ', 't-stat': '-1.8426030129887683 '}
+{'feature': 'n     ', 'sparse_num': '19', 'dense  _num': '21', 'p-value': '0.38088848887997695   ', 'ks-stat': '0.27068'}
+{'feature': 'n     ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.7549711524947715    ', 't-stat': '-0.3143546728731466 '}
+{'feature': 'n     ', 'non-cl_num': '16', 'cluster_num': '24', 'p-value': '0.7540250589217967    ', 'ks-stat': '0.20833'}
+{'feature': 'n     ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.30374087224936247   ', 't-stat': '-1.0425575269014462 '}
+{'feature': 'n     ', 'high  _num': '13', 'low    _num': '27', 'p-value': '0.46251450700296526   ', 'ks-stat': '0.27066'}
+{'environment': 'all', 'feature1': 'MUg0', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.042784763372927984', 'p-value': '0.7932181121734165    ', 't-stat': '-0.2639847218885373 '}
+{'environment': 'all', 'feature1': 'Mg  ', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.5427673257041826  ', 'p-value': '0.00029637442181733444', 't-stat': '-3.98370021114651   '}
+{'environment': 'all', 'feature1': 'Mg  ', 'feature2': 'MUg0  ', 'num': '40', 'rho': '0.17779237404568254  ', 'p-value': '0.27239044366201054   ', 't-stat': '1.1137297176564842  '}
+{'environment': 'all', 'feature1': 'g-r ', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.6295601905098118  ', 'p-value': '1.3485600718926302e-05', 't-stat': '-4.994994646527786  '}
+{'environment': 'all', 'feature1': 'g-r ', 'feature2': 'MUg0  ', 'num': '40', 'rho': '-0.0752945834262512  ', 'p-value': '0.6442528921866877    ', 't-stat': '-0.46546829351359204'}
+{'environment': 'all', 'feature1': 'g-r ', 'feature2': 'Mg    ', 'num': '40', 'rho': '0.3071362165781756   ', 'p-value': '0.05388173396827178   ', 't-stat': '1.9894749449889895  '}
+{'environment': 'all', 'feature1': 'Re  ', 'feature2': 'sepMpc', 'num': '40', 'rho': '0.4777610980965905   ', 'p-value': '0.001822754543937739  ', 't-stat': '3.3524773932556413  '}
+{'environment': 'all', 'feature1': 'Re  ', 'feature2': 'MUg0  ', 'num': '40', 'rho': '0.09269162251130923  ', 'p-value': '0.5694437843516551    ', 't-stat': '0.5738600811959618  '}
+{'environment': 'all', 'feature1': 'Re  ', 'feature2': 'Mg    ', 'num': '40', 'rho': '-0.861318321379522   ', 'p-value': '9.891898325771655e-13 ', 't-stat': '-10.450464941271244 '}
+{'environment': 'all', 'feature1': 'Re  ', 'feature2': 'g-r   ', 'num': '40', 'rho': '-0.28294453285551746 ', 'p-value': '0.07687663181357864   ', 't-stat': '-1.8184978385388073 '}
+{'environment': 'all', 'feature1': 'b/a ', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.25056355681898396 ', 'p-value': '0.11889090199060988   ', 't-stat': '-1.5954728396144533 '}
+{'environment': 'all', 'feature1': 'b/a ', 'feature2': 'MUg0  ', 'num': '40', 'rho': '0.03690142471794963  ', 'p-value': '0.8211537033050929    ', 't-stat': '0.2276306961411704  '}
+{'environment': 'all', 'feature1': 'b/a ', 'feature2': 'Mg    ', 'num': '40', 'rho': '0.08935533672702484  ', 'p-value': '0.5834782124096394    ', 't-stat': '0.5530355355464792  '}
+{'environment': 'all', 'feature1': 'b/a ', 'feature2': 'g-r   ', 'num': '40', 'rho': '0.2402856763992448   ', 'p-value': '0.13530913005195214   ', 't-stat': '1.525926656661031   '}
+{'environment': 'all', 'feature1': 'b/a ', 'feature2': 'Re    ', 'num': '40', 'rho': '-0.2502113768051061  ', 'p-value': '0.11942744670866437   ', 't-stat': '-1.5930804366188063 '}
+{'environment': 'all', 'feature1': 'n   ', 'feature2': 'sepMpc', 'num': '40', 'rho': '-0.21814599746065258 ', 'p-value': '0.1762862091408296    ', 't-stat': '-1.3779280598167096 '}
+{'environment': 'all', 'feature1': 'n   ', 'feature2': 'MUg0  ', 'num': '40', 'rho': '-0.5861163227016887  ', 'p-value': '7.070699122499315e-05 ', 't-stat': '-4.45932317643094   '}
+{'environment': 'all', 'feature1': 'n   ', 'feature2': 'Mg    ', 'num': '40', 'rho': '0.14814467473252388  ', 'p-value': '0.36161791310932434   ', 't-stat': '0.9234143384207506  '}
+{'environment': 'all', 'feature1': 'n   ', 'feature2': 'g-r   ', 'num': '40', 'rho': '0.3056847426881221   ', 'p-value': '0.055084184572678295  ', 't-stat': '1.9791013819470813  '}
+{'environment': 'all', 'feature1': 'n   ', 'feature2': 'Re    ', 'num': '40', 'rho': '-0.07768083344065187 ', 'p-value': '0.6337618279657713    ', 't-stat': '-0.48030817488662364'}
+{'environment': 'all', 'feature1': 'n   ', 'feature2': 'b/a   ', 'num': '40', 'rho': '0.13539912072082283  ', 'p-value': '0.4048273368450269    ', 't-stat': '0.8424139096403165  '}
